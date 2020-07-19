@@ -377,6 +377,21 @@ namespace gl
         glVertexAttribIPointer(index.unwrap, size, (Data_Type) type, stride, pointer);
         assert(glGetError() == GL_NO_ERROR);
     }
+
+    enum String_Name
+    {
+        VENDOR                    = GL_VENDOR,
+        RENDERER                  = GL_RENDERER,
+        VERSION                   = GL_VERSION,
+        SHADING_LANGUAGE_VERSION  = GL_SHADING_LANGUAGE_VERSION,
+        EXTENSIONS                = GL_EXTENSIONS
+    };
+
+    ALWAYS_INLINE
+    const GLubyte *getString(String_Name name)
+    {
+        return glGetString((GLenum)name);
+    }
 }
 
 #endif  // GL_HPP
