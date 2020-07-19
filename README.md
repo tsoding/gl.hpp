@@ -1,5 +1,9 @@
 # gl.hpp
 
+**WARNING! The project is in an active development state and is not
+even alpha yet. Use it at your own risk. Nothing is documented,
+anything can be changed at any moment or stop working at all.**
+
 Typesafe wrappers for OpenGL. Heavely inspired by [Haskell OpenGL
 bindings](https://github.com/haskell-opengl/OpenGL/).
 
