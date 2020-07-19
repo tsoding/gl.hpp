@@ -34,8 +34,9 @@ namespace gl {
 }
 ```
 
-1. `gl::Shader_Type` and `gl::Shader` make it impossible to pass
-incorrect values to `gl::createShader` and `gl::compileShader`.
+1. `gl::Shader_Type` and `gl::Shader` make it ~~impossible~~ difficult
+to pass incorrect values to `gl::createShader` and
+`gl::compileShader`.
 2. the signatures of the functions "document" the fact `Shader` comes
 from `gl::createShader` and should be put into `gl::compileShader`
 later.
