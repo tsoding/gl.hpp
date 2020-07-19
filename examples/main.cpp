@@ -83,6 +83,7 @@ void oopsie_doopsie(int code, const char* description)
 const int WINDOW_WIDTH = 640;
 const int WINDOW_HEIGHT = 640;
 
+// TODO: VAO to remove redundancy in the tiles array (I guess I'm thinking about VBO)
 GLint tiles[] = {
     1, 1, 1, 1,
     2, 2, 2, 2,
@@ -111,6 +112,8 @@ int main(int argc, char *argv[])
             NULL, NULL);
 
     glfwMakeContextCurrent(window);
+
+    printf("OpenGL Version: %s\n", gl::getString(gl::VERSION));
 
     glDebugMessageCallback(funcname, NULL);
 

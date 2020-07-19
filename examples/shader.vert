@@ -16,6 +16,7 @@ void main(void)
     int instanceID = gl_VertexID / 4;
     int vertexID = gl_VertexID % 4;
 
+    // TODO: make visible size of the tiles independant from the size of the window
     int gray = vertexID ^ (vertexID >> 1);
     gl_Position = vec4(
         // 2 * (gray / 2) - 1,

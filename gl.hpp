@@ -16,6 +16,8 @@ struct Maybe
     T unwrap;
 };
 
+// TODO: gl.hpp supports only OpenGL 3.0 for now
+
 namespace gl
 {
     struct Color4
@@ -107,7 +109,7 @@ namespace gl
 
     ALWAYS_INLINE bool compileStatus(Shader shader)
     {
-        GLint param = 0;;
+        GLint param = 0;
         glGetShaderiv(shader.unwrap, GL_COMPILE_STATUS, &param);
         assert(glGetError() == GL_NO_ERROR);
         return (bool) param;
@@ -325,21 +327,30 @@ namespace gl
         ATTRIB_SIZE_4 = 4
     };
 
-    enum Data_Type
+    ALWAYS_INLINE Maybe<Attribute_ID> getAttribLocation(Program program,
+                                                        const GLchar * name)
     {
-        BYTE            = GL_BYTE,
-        UNSIGNED_BYTE   = GL_UNSIGNED_BYTE,
-        SHORT           = GL_SHORT,
-        UNSIGNED_SHORT  = GL_UNSIGNED_SHORT,
-        INT             = GL_INT,
-        UNSIGNED_INT    = GL_UNSIGNED_INT,
-        FLOAT           = GL_FLOAT,
-        DOUBLE          = GL_DOUBLE
+        GLint id = glGetAttribLocation(program.unwrap, name);
+        assert(glGetError() == GL_NO_ERROR);
+        if (id < 0) {
+            return {};
+        } else {
+            return {true, {(GLuint)id}};
+        }
+    }
+
+    enum Attribute_Type
+    {
+        HALF_FLOAT                  = GL_HALF_FLOAT,
+        FLOAT                       = GL_FLOAT,
+        DOUBLE                      = GL_DOUBLE,
+        INT_2_10_10_10_REV          = GL_INT_2_10_10_10_REV,
+        UNSIGNED_INT_2_10_10_10_REV = GL_UNSIGNED_INT_2_10_10_10_REV
     };
 
     ALWAYS_INLINE void vertexAttribPointer(Attribute_ID index,
                                            Attribute_Size size,
-                                           Data_Type type,
+                                           Attribute_Type type,
                                            GLboolean normalized,
                                            GLsizei  stride,
                                            const GLvoid *pointer)
@@ -354,27 +365,25 @@ namespace gl
         assert(glGetError() == GL_NO_ERROR);
     }
 
-    ALWAYS_INLINE Maybe<Attribute_ID> getAttribLocation(Program program,
-                                                        const GLchar * name)
+    enum Attribute_IType
     {
-        GLint id = glGetAttribLocation(program.unwrap, name);
-        assert(glGetError() == GL_NO_ERROR);
-        if (id < 0) {
-            return {};
-        } else {
-            return {true, {(GLuint)id}};
-        }
-    }
+        BYTE            = GL_BYTE,
+        UNSIGNED_BYTE   = GL_UNSIGNED_BYTE,
+        SHORT           = GL_SHORT,
+        UNSIGNED_SHORT  = GL_UNSIGNED_SHORT,
+        INT             = GL_INT,
+        UNSIGNED_INT    = GL_UNSIGNED_INT
+    };
 
-    ALWAYS_INLINE 
+    ALWAYS_INLINE
     void vertexAttribIPointer(Attribute_ID index,
                               GLint size,
-                              // TODO: gl::vertexAttribIPointer accepts different types than gl::vertexAttribPointer
-                              Data_Type type,
+                              Attribute_IType type,
                               GLsizei stride,
                               const GLvoid *pointer)
     {
-        glVertexAttribIPointer(index.unwrap, size, (Data_Type) type, stride, pointer);
+        glVertexAttribIPointer(index.unwrap,
+        size, (Attribute_Type) type, stride, pointer);
         assert(glGetError() == GL_NO_ERROR);
     }
 
