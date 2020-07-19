@@ -88,7 +88,7 @@ GLint tiles[] = {
     1, 1, 1, 1,
     2, 2, 2, 2,
     3, 3, 3, 3,
-    4, 4, 4, 4
+    4, 4, 4, 4,
 };
 
 void funcname(GLenum source, GLenum type, GLuint id,
@@ -117,22 +117,26 @@ int main(int argc, char *argv[])
 
     glDebugMessageCallback(funcname, NULL);
 
-    auto tileBuffer = gl::genBuffer();
-    gl::bindBuffer(gl::ARRAY_BUFFER, tileBuffer);
+    auto vert = read_and_compile_shader(gl::VERTEX_SHADER, "shader.vert");
+    auto frag = read_and_compile_shader(gl::FRAGMENT_SHADER, "shader.frag");
+    auto program = link_program(vert, frag);
+    gl::useProgram(program);
+
+    auto vao = gl::genVertexArray();
+    gl::bindVertexArray(vao);
+
+    auto tile_buffer = gl::genBuffer();
+    gl::bindBuffer(gl::ARRAY_BUFFER, tile_buffer);
     gl::bufferData(gl::ARRAY_BUFFER, sizeof(tiles), tiles, gl::STATIC_DRAW);
 
     gl::Attribute_ID tileAttrib = {0};
+    gl::bindAttribLocation(program, tileAttrib, "tile");
     gl::enableVertexAttribArray(tileAttrib);
     gl::vertexAttribIPointer(tileAttrib,
                              1,
                              gl::INT,
                              0,
                              nullptr);
-
-    auto vert = read_and_compile_shader(gl::VERTEX_SHADER, "shader.vert");
-    auto frag = read_and_compile_shader(gl::FRAGMENT_SHADER, "shader.frag");
-    auto program = link_program(vert, frag);
-    gl::useProgram(program);
 
     auto u_resolution = gl::getUniformLocation(program, "u_resolution");
     auto u_time = gl::getUniformLocation(program, "u_time");
@@ -151,7 +155,8 @@ int main(int argc, char *argv[])
         gl::uniform(u_resolution, gl::Vec2f {(GLfloat) width, (GLfloat) height});
         gl::uniform(u_time, time);
 
-        gl::drawArrays(gl::QUADS, 0, sizeof(tiles) / sizeof(tiles[0]));
+        gl::bindVertexArray(vao);
+        gl::drawArrays(gl::TRIANGLE_STRIP, 0, sizeof(tiles) / sizeof(tiles[0]));
 
         glfwSwapBuffers(window);
         glfwPollEvents();

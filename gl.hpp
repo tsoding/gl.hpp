@@ -27,7 +27,6 @@ namespace gl
 
     enum Clear_Mask
     {
-
         COLOR_BUFFER_BIT = GL_COLOR_BUFFER_BIT,
         DEPTH_BUFFER_BIT = GL_DEPTH_BUFFER_BIT,
         ACCUM_BUFFER_BIT = GL_ACCUM_BUFFER_BIT,
@@ -182,16 +181,17 @@ namespace gl
     }
 
     enum Mode {
-        POINTS          = GL_POINTS,
-        LINE_STRIP      = GL_LINE_STRIP,
-        LINE_LOOP       = GL_LINE_LOOP,
-        LINES           = GL_LINES,
-        TRIANGLE_STRIP  = GL_TRIANGLE_STRIP,
-        TRIANGLE_FAN    = GL_TRIANGLE_FAN,
-        TRIANGLES       = GL_TRIANGLES,
-        QUAD_STRIP      = GL_QUAD_STRIP,
-        QUADS           = GL_QUADS,
-        POLYGON         = GL_POLYGON
+        POINTS                   = GL_POINTS,
+        LINE_STRIP               = GL_LINE_STRIP,
+        LINE_LOOP                = GL_LINE_LOOP,
+        LINES                    = GL_LINES,
+        LINE_STRIP_ADJACENCY     = GL_LINE_STRIP_ADJACENCY,
+        LINES_ADJACENCY          = GL_LINES_ADJACENCY,
+        TRIANGLE_STRIP           = GL_TRIANGLE_STRIP,
+        TRIANGLE_FAN             = GL_TRIANGLE_FAN,
+        TRIANGLES                = GL_TRIANGLES,
+        TRIANGLE_STRIP_ADJACENCY = GL_TRIANGLE_STRIP_ADJACENCY,
+        TRIANGLES_ADJACENCY      = GL_TRIANGLES_ADJACENCY
     };
 
     ALWAYS_INLINE void drawArrays(Mode mode, GLint first, GLsizei count)
@@ -401,6 +401,33 @@ namespace gl
     {
         return glGetString((GLenum)name);
     }
+
+    enum Element_Index_Type
+    {
+        EIT_UNSIGNED_BYTE  = GL_UNSIGNED_BYTE,
+        EIT_UNSIGNED_SHORT = GL_UNSIGNED_SHORT,
+        EIT_UNSIGNED_INT   = GL_UNSIGNED_INT,
+    };
+
+    void drawElements(Mode mode,
+                      GLsizei count,
+                      Element_Index_Type type,
+                      const GLvoid *indices)
+    {
+        glDrawElements((GLenum) mode, count, (GLenum) type, indices);
+        assert(glGetError() == GL_NO_ERROR);
+    }
+
+    void bindAttribLocation(Program program,
+                            Attribute_ID index,
+                            const GLchar *name)
+    {
+        glBindAttribLocation(program.unwrap,
+                             index.unwrap,
+                             name);
+        assert(glGetError() == GL_NO_ERROR);
+    }
+
 }
 
 #endif  // GL_HPP
