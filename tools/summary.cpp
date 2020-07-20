@@ -75,16 +75,15 @@ struct String_View
         return trim_left().trim_right();
     };
 
-    bool operator==(const String_View &that)
+    bool operator==(const String_View &that) const
     {
         if (this->count != that.count) return false;
         return memcmp(this->data, that.data, this->count) == 0;
     }
 
-    bool operator==(const String_View &that) const
+    bool operator!=(const String_View &that) const
     {
-        if (this->count != that.count) return false;
-        return memcmp(this->data, that.data, this->count) == 0;
+        return !(*this == that);
     }
 };
 
@@ -157,41 +156,120 @@ void chop_csv_field(String_View *line, char delim, char esc,
     }
 }
 
+template <typename T>
+struct Maybe
+{
+    bool has_value;
+    T unwrap;
+};
+
+struct Csv
+{
+    String_View input;
+    String_View line;
+    String_Buffer buffer;
+
+    bool next_row()
+    {
+        if (input.count > 0) {
+            line = input.chop_by_delim('\n');
+            return true;
+        }
+
+        return false;
+    }
+
+    // TODO: Csv::next_field() invalidates the previous field
+    Maybe<String_View> next_field()
+    {
+        if (line.count > 0) {
+            buffer.clean();
+            chop_csv_field(&line, ',', '\\', &buffer);
+            return {true, buffer.to_view().trim()};
+        }
+
+        return {};
+    }
+};
+
+Csv csv_from_file(const char *file_path)
+{
+    Csv csv = {};
+    csv.input = read_whole_file(file_path);
+    csv.buffer.data = (char*) malloc(csv.input.count);
+    csv.buffer.capacity = csv.input.count;
+    return csv;
+}
+
 void usage(FILE *stream)
 {
-    fprintf(stream, "Usage: ./summary <todo-file>\n");
+    fprintf(stream,
+            "Usage: ./summary <subcommand> <todo-file>\n"
+            "Subcommands:\n"
+            "    summary      Print the summary of the implementation coverage\n"
+            "    done         Print the list of implemented functions\n"
+            "    todo         Print the list of not implemented functions\n");
+}
+
+String_View string_view_from_cstr(const char *cstr)
+{
+    return {cstr, strlen(cstr)};
 }
 
 int main(int argc, char *argv[])
 {
-    if (argc < 2) {
+    if (argc < 3) {
         usage(stderr);
         return -1;
     }
 
-    String_View content = read_whole_file(argv[1]);
-    String_Buffer buffer = {};
-    buffer.data = (char*) malloc(content.count);
-    buffer.capacity = content.count;
+    String_View subcommand = string_view_from_cstr(argv[1]);
+    const char *file_path = argv[2];
 
-    size_t implemented = 0;
-    size_t total = 0;
+    if (subcommand == "summary"_sv) {
+        Csv csv = csv_from_file(file_path);
 
-    while (content.count > 0) {
-        String_View line = content.chop_by_delim('\n');
+        size_t implemented = 0;
+        size_t total = 0;
 
-        buffer.clean();
-        chop_csv_field(&line, ',', '\\', &buffer);
-        auto field = buffer.to_view().trim();
+        while (csv.next_row()) {
+            auto field = csv.next_field();
+            if (field.unwrap == "+"_sv) implemented += 1;
+            total += 1;
+        }
 
-        if (field == "+"_sv) implemented += 1;
+        printf("Implemented: %ld/%ld (%.2f%%)\n",
+               implemented, total,
+               total > 0 ? (float) implemented / (float) total * 100.0 : 100.0);
 
-        total += 1;
+    } else if (subcommand == "done"_sv) {
+        Csv csv = csv_from_file(file_path);
+
+        while (csv.next_row()) {
+            auto implemented = csv.next_field();
+            assert(implemented.has_value);
+
+            if (implemented.unwrap == "+"_sv) {
+                auto name = csv.next_field();
+                assert(name.has_value);
+                name.unwrap.println(stdout);
+            }
+        }
+    } else if (subcommand == "todo"_sv) {
+        Csv csv = csv_from_file(file_path);
+
+        while (csv.next_row()) {
+            auto implemented = csv.next_field();
+            assert(implemented.has_value);
+
+            if (implemented.unwrap != "+"_sv) {
+                auto name = csv.next_field();
+                assert(name.has_value);
+                name.unwrap.println(stdout);
+            }
+        }
     }
 
-    printf("Implemented: %ld/%ld (%.2f%%)\n",
-           implemented, total,
-           total > 0 ? (float) implemented / (float) total * 100.0 : 100.0);
 
     return 0;
 }
