@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
     gl::bindAttribLocation(program, tileAttrib, "tile");
     gl::enableVertexAttribArray(tileAttrib);
     gl::vertexAttribIPointer(tileAttrib,
-                             1,
+                             gl::Attribute_Size::ONE,
                              gl::INT,
                              0,
                              nullptr);

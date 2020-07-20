@@ -344,12 +344,13 @@ namespace gl
         ASSERT_GL_ERROR;
     }
 
-    enum Attribute_Size
+    enum class Attribute_Size
     {
-        ATTRIB_SIZE_1 = 1,
-        ATTRIB_SIZE_2 = 2,
-        ATTRIB_SIZE_3 = 3,
-        ATTRIB_SIZE_4 = 4
+        ONE   = 1,
+        TWO   = 2,
+        THREE = 3,
+        FOUR  = 4,
+        BGRA  = GL_BGRA
     };
 
     ALWAYS_INLINE Maybe<Attribute_Location> getAttribLocation(Program program,
@@ -402,13 +403,16 @@ namespace gl
 
     ALWAYS_INLINE
     void vertexAttribIPointer(Attribute_Location index,
-                              GLint size,
+                              Attribute_Size size,
                               Attribute_IType type,
                               GLsizei stride,
                               const GLvoid *pointer)
     {
         glVertexAttribIPointer(index.unwrap,
-        size, (Attribute_Type) type, stride, pointer);
+                static_cast<GLint>(size), 
+                static_cast<GLenum>(type), 
+                stride, 
+                pointer);
         ASSERT_GL_ERROR;
     }
 
