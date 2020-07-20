@@ -119,6 +119,11 @@ struct String_Buffer
     {
         return {data, count};
     }
+
+    char *end()
+    {
+        return data + count;
+    }
 };
 
 String_View read_whole_file(const char *file_path)
@@ -138,22 +143,28 @@ String_View read_whole_file(const char *file_path)
     return {result, (size_t) m};
 }
 
-void chop_csv_field(String_View *line, char delim, char esc,
-                    String_Buffer *field)
+String_View chop_csv_field(String_View *line, char delim, char esc,
+                           String_Buffer *buffer)
 {
+    String_View field = {buffer->end(), 0};
+
     while (line->count > 0) {
         if (*line->data == delim) {
             line->chop_left(1);
-            return;
+            return field;
         } else if (*line->data == esc && line->count > 1) {
             line->chop_left(1);
-            field->push(*line->data);
+            buffer->push(*line->data);
+            field.grow(1);
             line->chop_left(1);
         } else {
-            field->push(*line->data);
+            buffer->push(*line->data);
+            field.grow(1);
             line->chop_left(1);
         }
     }
+
+    return field;
 }
 
 template <typename T>
@@ -183,9 +194,7 @@ struct Csv
     Maybe<String_View> next_field()
     {
         if (line.count > 0) {
-            buffer.clean();
-            chop_csv_field(&line, ',', '\\', &buffer);
-            return {true, buffer.to_view().trim()};
+            return {true, chop_csv_field(&line, ',', '\\', &buffer).trim()};
         }
 
         return {};
@@ -241,17 +250,16 @@ int main(int argc, char *argv[])
         printf("Implemented: %ld/%ld (%.2f%%)\n",
                implemented, total,
                total > 0 ? (float) implemented / (float) total * 100.0 : 100.0);
-
     } else if (subcommand == "done"_sv) {
         Csv csv = csv_from_file(file_path);
 
         while (csv.next_row()) {
             auto implemented = csv.next_field();
+            auto name = csv.next_field();
             assert(implemented.has_value);
+            assert(name.has_value);
 
             if (implemented.unwrap == "+"_sv) {
-                auto name = csv.next_field();
-                assert(name.has_value);
                 name.unwrap.println(stdout);
             }
         }
@@ -260,11 +268,11 @@ int main(int argc, char *argv[])
 
         while (csv.next_row()) {
             auto implemented = csv.next_field();
+            auto name = csv.next_field();
             assert(implemented.has_value);
+            assert(name.has_value);
 
             if (implemented.unwrap != "+"_sv) {
-                auto name = csv.next_field();
-                assert(name.has_value);
                 name.unwrap.println(stdout);
             }
         }
