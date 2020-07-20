@@ -431,11 +431,11 @@ namespace gl
         return glGetString((GLenum)name);
     }
 
-    enum Element_Index_Type
+    enum class Element_Index_Type
     {
-        EIT_UNSIGNED_BYTE  = GL_UNSIGNED_BYTE,
-        EIT_UNSIGNED_SHORT = GL_UNSIGNED_SHORT,
-        EIT_UNSIGNED_INT   = GL_UNSIGNED_INT,
+        UNSIGNED_BYTE  = GL_UNSIGNED_BYTE,
+        UNSIGNED_SHORT = GL_UNSIGNED_SHORT,
+        UNSIGNED_INT   = GL_UNSIGNED_INT,
     };
 
     void drawElements(Draw_Mode mode,
