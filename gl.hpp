@@ -391,7 +391,7 @@ namespace gl
         ASSERT_GL_ERROR;
     }
 
-    enum Attribute_IType
+    enum class Attribute_IType
     {
         BYTE            = GL_BYTE,
         UNSIGNED_BYTE   = GL_UNSIGNED_BYTE,

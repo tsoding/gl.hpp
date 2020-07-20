@@ -135,7 +135,7 @@ int main(int argc, char *argv[])
     gl::enableVertexAttribArray(tileAttrib);
     gl::vertexAttribIPointer(tileAttrib,
                              gl::Attribute_Size::ONE,
-                             gl::INT,
+                             gl::Attribute_IType::INT,
                              0,
                              nullptr);
 
