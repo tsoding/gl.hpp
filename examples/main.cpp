@@ -153,8 +153,13 @@ int main(int argc, char *argv[])
         gl::clearColor({0.0f, 0.0f, 0.0f, 1.0f});
         gl::clear(gl::Buffer_Bit::COLOR | gl::Buffer_Bit::DEPTH);
 
-        gl::uniform(u_resolution, gl::Vec2f {(GLfloat) width, (GLfloat) height});
-        gl::uniform(u_time, time);
+        if (u_resolution.has_value) {
+            gl::uniform(u_resolution.unwrap, gl::Vec2f {(GLfloat) width, (GLfloat) height});
+        }
+
+        if (u_time.has_value) {
+            gl::uniform(u_time.unwrap, time);
+        }
 
         gl::bindVertexArray(vao);
         gl::drawArrays(gl::Draw_Mode::TRIANGLE_STRIP, 0, sizeof(tiles) / sizeof(tiles[0]));

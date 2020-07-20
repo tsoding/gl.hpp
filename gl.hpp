@@ -234,11 +234,15 @@ namespace gl
 
     using Vec2f = Vec2<GLfloat>;
 
-    ALWAYS_INLINE Uniform getUniformLocation(Program program, const GLchar *name)
+    ALWAYS_INLINE Maybe<Uniform> getUniformLocation(Program program, const GLchar *name)
     {
         auto location = glGetUniformLocation(program.unwrap, name);
         ASSERT_GL_ERROR;
-        return Uniform {location};
+        if (location < 0) {
+            return {};
+        } else {
+            return {true, {location}};
+        }
     }
 
     ALWAYS_INLINE void uniform(Uniform uniform, Vec2<GLfloat> vec)
