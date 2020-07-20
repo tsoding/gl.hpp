@@ -1,5 +1,5 @@
 PKGS=glfw3 gl
-CXXFLAGS=-Wall -I.. `pkg-config --cflags $(PKGS)`
+CXXFLAGS=-Wall -Wno-missing-braces -I.. -std=c++17 `pkg-config --cflags $(PKGS)`
 LIBS=`pkg-config --libs $(PKGS)`
 
 tiles: main.cpp ../gl.hpp

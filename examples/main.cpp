@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
         glViewport(0, 0, width, height);
 
         gl::clearColor({0.0f, 0.0f, 0.0f, 1.0f});
-        gl::clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
+        gl::clear(gl::Buffer_Bit::Color | gl::Buffer_Bit::Depth);
 
         gl::uniform(u_resolution, gl::Vec2f {(GLfloat) width, (GLfloat) height});
         gl::uniform(u_time, time);

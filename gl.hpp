@@ -33,22 +33,33 @@ namespace gl
         GLclampf r, g, b, a;
     };
 
-    enum Clear_Mask
+    template <typename That>
+    struct Bit_Field
     {
-        COLOR_BUFFER_BIT = GL_COLOR_BUFFER_BIT,
-        DEPTH_BUFFER_BIT = GL_DEPTH_BUFFER_BIT,
-        ACCUM_BUFFER_BIT = GL_ACCUM_BUFFER_BIT,
-        STENCIL_BUFFER_BIT = GL_STENCIL_BUFFER_BIT
+        GLbitfield unwrap;
+
+        ALWAYS_INLINE That operator| (That that) const { return {unwrap | that.unwrap}; }
+        ALWAYS_INLINE That operator& (That that) const { return {unwrap & that.unwrap}; }
+        ALWAYS_INLINE That operator^ (That that) const { return {unwrap ^ that.unwrap}; }
+        ALWAYS_INLINE That operator>>(That that) const { return {unwrap >> that.unwrap}; }
+        ALWAYS_INLINE That operator<<(That that) const { return {unwrap << that.unwrap}; }
     };
 
-    ALWAYS_INLINE Clear_Mask operator|(Clear_Mask a, Clear_Mask b)
-    {
-        return (Clear_Mask)((int) a | (int) b);
-    }
+    struct Buffer_Bit: public Bit_Field<Buffer_Bit> {
+        static const Buffer_Bit Color;
+        static const Buffer_Bit Depth;
+        static const Buffer_Bit Accum;
+        static const Buffer_Bit Stencil;
+    };
 
-    ALWAYS_INLINE void clear(Clear_Mask buffer)
+    const Buffer_Bit Buffer_Bit::Color   = {GL_COLOR_BUFFER_BIT};
+    const Buffer_Bit Buffer_Bit::Depth   = {GL_DEPTH_BUFFER_BIT};
+    const Buffer_Bit Buffer_Bit::Accum   = {GL_ACCUM_BUFFER_BIT};
+    const Buffer_Bit Buffer_Bit::Stencil = {GL_STENCIL_BUFFER_BIT};
+
+    ALWAYS_INLINE void clear(Buffer_Bit buffer)
     {
-        glClear(buffer);
+        glClear(buffer.unwrap);
         ASSERT_GL_ERROR;
     }
 
