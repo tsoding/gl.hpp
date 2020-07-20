@@ -241,11 +241,7 @@ namespace gl
     {
         auto location = glGetUniformLocation(program.unwrap, name);
         ASSERT_GL_ERROR;
-        if (location < 0) {
-            return {};
-        } else {
-            return {true, {location}};
-        }
+        return {location >= 0, {location}};
     }
 
     ALWAYS_INLINE void uniform(Uniform uniform, Vec2<GLfloat> vec)
@@ -271,6 +267,7 @@ namespace gl
         GLuint unwrap;
     };
 
+    // TODO: gl::genVertexArrays() that generates several Vertex Arrays
     ALWAYS_INLINE Vertex_Array genVertexArray()
     {
         GLuint id = {};
@@ -372,11 +369,7 @@ namespace gl
     {
         GLint id = glGetAttribLocation(program.unwrap, name);
         ASSERT_GL_ERROR;
-        if (id < 0) {
-            return {};
-        } else {
-            return {true, {static_cast<GLuint>(id)}};
-        }
+        return {id >= 0, {static_cast<GLuint>(id)}};
     }
 
     enum class Attribute_Type
