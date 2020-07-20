@@ -49,4 +49,4 @@ later.
 One thing to note is that all of the above is probably a non-problem for an
 experienced OpenGL programmer since they have probably memorized all of the
 semantic function connections and pitfalls of the API. This library is aimed
-at people who only learning OpenGL.
+at experienced programmers who's only learning OpenGL.
