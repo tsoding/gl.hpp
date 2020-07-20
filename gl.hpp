@@ -287,6 +287,19 @@ namespace gl
         GLuint unwrap;
     };
 
+    ALWAYS_INLINE void genBuffers(GLsizei n, Buffer *buffers)
+    {
+        static_assert(
+                sizeof(Buffer) == sizeof(GLuint),
+                "Cannot use gl::genBuffers properly because it makes an assumption "
+                "that sizeof(Buffer) is equal to sizeof(GLuint). But this is not true "
+                "on this machine. Probably due to the compiler padding the Buffer structure. "
+                "This is definitely a bug of gl.hpp and result of the laziness of its developers. "
+                "Welcome to Open Source. :) "
+                "Please submit an Issue or a Pull Request to https://github.com/tsoding/gl.hpp");
+        glGenBuffers(n, reinterpret_cast<GLuint*>(buffers));
+    }
+
     ALWAYS_INLINE Buffer genBuffer()
     {
         Buffer result = {};
@@ -294,8 +307,6 @@ namespace gl
         ASSERT_GL_ERROR;
         return result;
     }
-
-    // TODO: gl::genBuffer for several buffer
 
     enum class Buffer_Target
     {

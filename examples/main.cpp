@@ -84,7 +84,6 @@ void oopsie_doopsie(int code, const char* description)
 const int WINDOW_WIDTH = 640;
 const int WINDOW_HEIGHT = 640;
 
-// TODO: VAO to remove redundancy in the tiles array (I guess I'm thinking about VBO)
 GLint tiles[] = {
     1, 1, 1, 1,
     2, 2, 2, 2,
@@ -126,7 +125,8 @@ int main(int argc, char *argv[])
     auto vao = gl::genVertexArray();
     gl::bindVertexArray(vao);
 
-    auto tile_buffer = gl::genBuffer();
+    gl::Buffer tile_buffer = {};
+    gl::genBuffers(1, &tile_buffer);
     gl::bindBuffer(gl::Buffer_Target::ARRAY, tile_buffer);
     gl::bufferData(gl::Buffer_Target::ARRAY, sizeof(tiles), tiles, gl::Buffer_Usage::STATIC_DRAW);
 
