@@ -365,7 +365,7 @@ namespace gl
         }
     }
 
-    enum Attribute_Type
+    enum class Attribute_Type
     {
         HALF_FLOAT                  = GL_HALF_FLOAT,
         FLOAT                       = GL_FLOAT,
