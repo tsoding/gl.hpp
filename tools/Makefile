@@ -1,2 +1,2 @@
-summary: summary.cpp
-	g++ -Wall -o summary summary.cpp
+coverage: coverage.cpp
+	g++ -Wall -o coverage coverage.cpp

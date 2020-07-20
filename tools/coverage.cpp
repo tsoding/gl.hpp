@@ -204,7 +204,7 @@ Csv csv_from_file(const char *file_path)
 void usage(FILE *stream)
 {
     fprintf(stream,
-            "Usage: ./summary <subcommand> <todo-file>\n"
+            "Usage: ./coverage <subcommand> <todo-file>\n"
             "Subcommands:\n"
             "    summary      Print the summary of the implementation coverage\n"
             "    done         Print the list of implemented functions\n"
