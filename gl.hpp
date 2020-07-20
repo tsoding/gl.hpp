@@ -297,12 +297,12 @@ namespace gl
 
     // TODO: gl::genBuffer for several buffer
 
-    enum Buffer_Target
+    enum class Buffer_Target
     {
-        ARRAY_BUFFER         = GL_ARRAY_BUFFER,
-        ELEMENT_ARRAY_BUFFER = GL_ELEMENT_ARRAY_BUFFER,
-        PIXEL_PACK_BUFFER    = GL_PIXEL_PACK_BUFFER,
-        PIXEL_UNPACK_BUFFER  = GL_PIXEL_UNPACK_BUFFER
+        ARRAY         = GL_ARRAY_BUFFER,
+        ELEMENT_ARRAY = GL_ELEMENT_ARRAY_BUFFER,
+        PIXEL_PACK    = GL_PIXEL_PACK_BUFFER,
+        PIXEL_UNPACK  = GL_PIXEL_UNPACK_BUFFER
     };
 
     enum Buffer_Usage
@@ -320,7 +320,7 @@ namespace gl
 
     void bindBuffer(Buffer_Target target, Buffer buffer)
     {
-        glBindBuffer((GLenum) target, buffer.unwrap);
+        glBindBuffer(static_cast<GLenum>(target), buffer.unwrap);
         ASSERT_GL_ERROR;
     }
 
@@ -329,7 +329,7 @@ namespace gl
                     const GLvoid *data,
                     Buffer_Usage  usage)
     {
-        glBufferData((GLenum) target, size, data, (GLenum) usage);
+        glBufferData(static_cast<GLenum>(target), size, data, (GLenum) usage);
         ASSERT_GL_ERROR;
     }
 

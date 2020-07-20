@@ -127,8 +127,8 @@ int main(int argc, char *argv[])
     gl::bindVertexArray(vao);
 
     auto tile_buffer = gl::genBuffer();
-    gl::bindBuffer(gl::ARRAY_BUFFER, tile_buffer);
-    gl::bufferData(gl::ARRAY_BUFFER, sizeof(tiles), tiles, gl::STATIC_DRAW);
+    gl::bindBuffer(gl::Buffer_Target::ARRAY, tile_buffer);
+    gl::bufferData(gl::Buffer_Target::ARRAY, sizeof(tiles), tiles, gl::STATIC_DRAW);
 
     gl::Attribute_ID tileAttrib = {0};
     gl::bindAttribLocation(program, tileAttrib, "tile");
