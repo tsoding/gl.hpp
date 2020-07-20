@@ -305,7 +305,7 @@ namespace gl
         PIXEL_UNPACK  = GL_PIXEL_UNPACK_BUFFER
     };
 
-    enum Buffer_Usage
+    enum class Buffer_Usage
     {
         STREAM_DRAW   = GL_STREAM_DRAW,
         STREAM_READ   = GL_STREAM_READ,
@@ -329,7 +329,7 @@ namespace gl
                     const GLvoid *data,
                     Buffer_Usage  usage)
     {
-        glBufferData(static_cast<GLenum>(target), size, data, (GLenum) usage);
+        glBufferData(static_cast<GLenum>(target), size, data, static_cast<GLenum>(usage));
         ASSERT_GL_ERROR;
     }
 
