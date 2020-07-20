@@ -189,11 +189,9 @@ int main(int argc, char *argv[])
         total += 1;
     }
 
-    if (total > 0) {
-        printf("Implemented %.2f%%\n", (float) implemented / (float) total * 100.0);
-    } else {
-        printf("Implemented 100.00%%\n");
-    }
+    printf("Implemented: %ld/%ld (%.2f%%)\n",
+           implemented, total,
+           total > 0 ? (float) implemented / (float) total * 100.0 : 100.0);
 
     return 0;
 }
