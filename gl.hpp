@@ -333,12 +333,12 @@ namespace gl
         ASSERT_GL_ERROR;
     }
 
-    struct Attribute_ID
+    struct Attribute_Location
     {
         GLuint unwrap;
     };
 
-    ALWAYS_INLINE void enableVertexAttribArray(Attribute_ID index)
+    ALWAYS_INLINE void enableVertexAttribArray(Attribute_Location index)
     {
         glEnableVertexAttribArray(index.unwrap);
         ASSERT_GL_ERROR;
@@ -352,8 +352,8 @@ namespace gl
         ATTRIB_SIZE_4 = 4
     };
 
-    ALWAYS_INLINE Maybe<Attribute_ID> getAttribLocation(Program program,
-                                                        const GLchar * name)
+    ALWAYS_INLINE Maybe<Attribute_Location> getAttribLocation(Program program,
+            const GLchar * name)
     {
         GLint id = glGetAttribLocation(program.unwrap, name);
         ASSERT_GL_ERROR;
@@ -373,7 +373,7 @@ namespace gl
         UNSIGNED_INT_2_10_10_10_REV = GL_UNSIGNED_INT_2_10_10_10_REV
     };
 
-    ALWAYS_INLINE void vertexAttribPointer(Attribute_ID index,
+    ALWAYS_INLINE void vertexAttribPointer(Attribute_Location index,
                                            Attribute_Size size,
                                            Attribute_Type type,
                                            GLboolean normalized,
@@ -401,7 +401,7 @@ namespace gl
     };
 
     ALWAYS_INLINE
-    void vertexAttribIPointer(Attribute_ID index,
+    void vertexAttribIPointer(Attribute_Location index,
                               GLint size,
                               Attribute_IType type,
                               GLsizei stride,
@@ -444,7 +444,7 @@ namespace gl
     }
 
     void bindAttribLocation(Program program,
-                            Attribute_ID index,
+                            Attribute_Location index,
                             const GLchar *name)
     {
         glBindAttribLocation(program.unwrap,

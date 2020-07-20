@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
     gl::bindBuffer(gl::Buffer_Target::ARRAY, tile_buffer);
     gl::bufferData(gl::Buffer_Target::ARRAY, sizeof(tiles), tiles, gl::Buffer_Usage::STATIC_DRAW);
 
-    gl::Attribute_ID tileAttrib = {0};
+    gl::Attribute_Location tileAttrib = {0};
     gl::bindAttribLocation(program, tileAttrib, "tile");
     gl::enableVertexAttribArray(tileAttrib);
     gl::vertexAttribIPointer(tileAttrib,
