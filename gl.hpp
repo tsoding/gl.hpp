@@ -16,6 +16,14 @@ struct Maybe
     T unwrap;
 };
 
+#ifndef ASSERT_GL_ERROR
+#ifdef GL_HPP_ASSERT_GL_ERRORS
+#define ASSERT_GL_ERROR assert(glGetError() == GL_NO_ERROR)
+#else
+#define ASSERT_GL_ERROR do {} while(0)
+#endif
+#endif
+
 // TODO: gl.hpp supports only OpenGL 3.0 for now
 
 namespace gl
@@ -41,13 +49,13 @@ namespace gl
     ALWAYS_INLINE void clear(Clear_Mask buffer)
     {
         glClear(buffer);
-        assert(glGetError() == GL_NO_ERROR);
+        ASSERT_GL_ERROR;
     }
 
     ALWAYS_INLINE void clearColor(Color4 color)
     {
         glClearColor(color.r, color.g, color.b, color.a);
-        assert(glGetError() == GL_NO_ERROR);
+        ASSERT_GL_ERROR;
     }
 
     enum Shader_Type
@@ -65,7 +73,7 @@ namespace gl
     ALWAYS_INLINE Shader createShader(Shader_Type type)
     {
         auto shader = glCreateShader((GLenum)type);
-        assert(glGetError() == GL_NO_ERROR);
+        ASSERT_GL_ERROR;
         return Shader { shader };
     }
 
@@ -75,7 +83,7 @@ namespace gl
                                     const GLint * length)
     {
         glShaderSource(shader.unwrap, count, string, length);
-        assert(glGetError() == GL_NO_ERROR);
+        ASSERT_GL_ERROR;
     }
 
     template <size_t Max_Length>
@@ -88,14 +96,14 @@ namespace gl
     ALWAYS_INLINE void compileShader(Shader shader)
     {
         glCompileShader(shader.unwrap);
-        assert(glGetError() == GL_NO_ERROR);
+        ASSERT_GL_ERROR;
     }
 
     template <GLsizei Max_Length>
     ALWAYS_INLINE void getShaderInfoLog(Shader shader, Info_Log<Max_Length> *infoLog)
     {
         glGetShaderInfoLog(shader.unwrap, Max_Length, &infoLog->length, infoLog->value);
-        assert(glGetError() == GL_NO_ERROR);
+        ASSERT_GL_ERROR;
     }
 
     template <GLsizei Max_Length>
@@ -103,7 +111,7 @@ namespace gl
     {
         Info_Log<Max_Length> infoLog = {};
         glGetShaderInfoLog(shader.unwrap, Max_Length, &infoLog.length, infoLog.value);
-        assert(glGetError() == GL_NO_ERROR);
+        ASSERT_GL_ERROR;
         return infoLog;
     }
 
@@ -111,14 +119,14 @@ namespace gl
     {
         GLint param = 0;
         glGetShaderiv(shader.unwrap, GL_COMPILE_STATUS, &param);
-        assert(glGetError() == GL_NO_ERROR);
+        ASSERT_GL_ERROR;
         return (bool) param;
     }
 
     ALWAYS_INLINE void deleteObject(Shader shader)
     {
         glDeleteShader(shader.unwrap);
-        assert(glGetError() == GL_NO_ERROR);
+        ASSERT_GL_ERROR;
     }
 
     struct Program
@@ -129,33 +137,33 @@ namespace gl
     ALWAYS_INLINE Program createProgram(void)
     {
         auto program = glCreateProgram();
-        assert(glGetError() == GL_NO_ERROR);
+        ASSERT_GL_ERROR;
         return Program { program };
     }
 
     ALWAYS_INLINE void deleteObject(Program program)
     {
         glDeleteProgram(program.unwrap);
-        assert(glGetError() == GL_NO_ERROR);
+        ASSERT_GL_ERROR;
     }
 
     ALWAYS_INLINE void attachShader(Program program, Shader shader)
     {
         glAttachShader(program.unwrap, shader.unwrap);
-        assert(glGetError() == GL_NO_ERROR);
+        ASSERT_GL_ERROR;
     }
 
     ALWAYS_INLINE void linkProgram(Program program)
     {
         glLinkProgram(program.unwrap);
-        assert(glGetError() == GL_NO_ERROR);
+        ASSERT_GL_ERROR;
     }
 
     ALWAYS_INLINE bool linkStatus(Program program)
     {
         GLint linked = 0;
         glGetProgramiv(program.unwrap, GL_LINK_STATUS, &linked);
-        assert(glGetError() == GL_NO_ERROR);
+        ASSERT_GL_ERROR;
         return (bool) linked;
     }
 
@@ -163,7 +171,7 @@ namespace gl
     ALWAYS_INLINE void getProgramInfoLog(Program program, Info_Log<Max_Length> *infoLog)
     {
         glGetProgramInfoLog(program.unwrap, Max_Length, &infoLog->length, infoLog->value);
-        assert(glGetError() == GL_NO_ERROR);
+        ASSERT_GL_ERROR;
     }
 
     template <GLsizei Max_Length>
@@ -171,14 +179,14 @@ namespace gl
     {
         Info_Log<Max_Length> infoLog = {};
         glGetProgramInfoLog(program.unwrap, Max_Length, &infoLog.length, infoLog.value);
-        assert(glGetError() == GL_NO_ERROR);
+        ASSERT_GL_ERROR;
         return infoLog;
     }
 
     void useProgram(Program program)
     {
         glUseProgram(program.unwrap);
-        assert(glGetError() == GL_NO_ERROR);
+        ASSERT_GL_ERROR;
     }
 
     enum Mode {
@@ -198,7 +206,7 @@ namespace gl
     ALWAYS_INLINE void drawArrays(Mode mode, GLint first, GLsizei count)
     {
         glDrawArrays((GLenum) mode, first, count);
-        assert(glGetError() == GL_NO_ERROR);
+        ASSERT_GL_ERROR;
     }
 
     struct Uniform
@@ -217,26 +225,26 @@ namespace gl
     ALWAYS_INLINE Uniform getUniformLocation(Program program, const GLchar *name)
     {
         auto location = glGetUniformLocation(program.unwrap, name);
-        assert(glGetError() == GL_NO_ERROR);
+        ASSERT_GL_ERROR;
         return Uniform {location};
     }
 
     ALWAYS_INLINE void uniform(Uniform uniform, Vec2<GLfloat> vec)
     {
         glUniform2f(uniform.unwrap, vec.x, vec.y);
-        assert(glGetError() == GL_NO_ERROR);
+        ASSERT_GL_ERROR;
     }
 
     ALWAYS_INLINE void uniform(Uniform uniform, GLfloat x)
     {
         glUniform1f(uniform.unwrap, x);
-        assert(glGetError() == GL_NO_ERROR);
+        ASSERT_GL_ERROR;
     }
 
     ALWAYS_INLINE void uniform(Uniform uniform, GLsizei count, GLint *xs)
     {
         glUniform1iv(uniform.unwrap, count, xs);
-        assert(glGetError() == GL_NO_ERROR);
+        ASSERT_GL_ERROR;
     }
 
     struct Vertex_Array
@@ -248,14 +256,14 @@ namespace gl
     {
         Vertex_Array result = {};
         glGenVertexArrays(1, &result.unwrap);
-        assert(glGetError() == GL_NO_ERROR);
+        ASSERT_GL_ERROR;
         return result;
     }
 
     ALWAYS_INLINE void bindVertexArray(Vertex_Array array)
     {
         glBindVertexArray(array.unwrap);
-        assert(glGetError() == GL_NO_ERROR);
+        ASSERT_GL_ERROR;
     }
 
     struct Buffer
@@ -267,7 +275,7 @@ namespace gl
     {
         Buffer result = {};
         glGenBuffers(1, &result.unwrap);
-        assert(glGetError() == GL_NO_ERROR);
+        ASSERT_GL_ERROR;
         return result;
     }
 
@@ -297,7 +305,7 @@ namespace gl
     void bindBuffer(Buffer_Target target, Buffer buffer)
     {
         glBindBuffer((GLenum) target, buffer.unwrap);
-        assert(glGetError() == GL_NO_ERROR);
+        ASSERT_GL_ERROR;
     }
 
     void bufferData(Buffer_Target  target,
@@ -306,7 +314,7 @@ namespace gl
                     Buffer_Usage  usage)
     {
         glBufferData((GLenum) target, size, data, (GLenum) usage);
-        assert(glGetError() == GL_NO_ERROR);
+        ASSERT_GL_ERROR;
     }
 
     struct Attribute_ID
@@ -317,7 +325,7 @@ namespace gl
     ALWAYS_INLINE void enableVertexAttribArray(Attribute_ID index)
     {
         glEnableVertexAttribArray(index.unwrap);
-        assert(glGetError() == GL_NO_ERROR);
+        ASSERT_GL_ERROR;
     }
 
     enum Attribute_Size
@@ -332,7 +340,7 @@ namespace gl
                                                         const GLchar * name)
     {
         GLint id = glGetAttribLocation(program.unwrap, name);
-        assert(glGetError() == GL_NO_ERROR);
+        ASSERT_GL_ERROR;
         if (id < 0) {
             return {};
         } else {
@@ -363,7 +371,7 @@ namespace gl
             normalized,
             stride,
             pointer);
-        assert(glGetError() == GL_NO_ERROR);
+        ASSERT_GL_ERROR;
     }
 
     enum Attribute_IType
@@ -385,7 +393,7 @@ namespace gl
     {
         glVertexAttribIPointer(index.unwrap,
         size, (Attribute_Type) type, stride, pointer);
-        assert(glGetError() == GL_NO_ERROR);
+        ASSERT_GL_ERROR;
     }
 
     enum String_Name
@@ -416,7 +424,7 @@ namespace gl
                       const GLvoid *indices)
     {
         glDrawElements((GLenum) mode, count, (GLenum) type, indices);
-        assert(glGetError() == GL_NO_ERROR);
+        ASSERT_GL_ERROR;
     }
 
     void bindAttribLocation(Program program,
@@ -426,9 +434,8 @@ namespace gl
         glBindAttribLocation(program.unwrap,
                              index.unwrap,
                              name);
-        assert(glGetError() == GL_NO_ERROR);
+        ASSERT_GL_ERROR;
     }
-
 }
 
 #endif  // GL_HPP

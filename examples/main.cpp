@@ -4,6 +4,7 @@
 #define GL_GLEXT_PROTOTYPES 2
 #include <GLFW/glfw3.h>
 #include <unistd.h>
+#define GL_HPP_ASSERT_GL_ERRORS
 #include "gl.hpp"
 
 void platformSleep(float secs)
