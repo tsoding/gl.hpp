@@ -47,16 +47,16 @@ namespace gl
     };
 
     struct Buffer_Bit: public Bit_Field<Buffer_Bit> {
-        static const Buffer_Bit Color;
-        static const Buffer_Bit Depth;
-        static const Buffer_Bit Accum;
-        static const Buffer_Bit Stencil;
+        static const Buffer_Bit COLOR;
+        static const Buffer_Bit DEPTH;
+        static const Buffer_Bit ACCUM;
+        static const Buffer_Bit STENCIL;
     };
 
-    const Buffer_Bit Buffer_Bit::Color   = {GL_COLOR_BUFFER_BIT};
-    const Buffer_Bit Buffer_Bit::Depth   = {GL_DEPTH_BUFFER_BIT};
-    const Buffer_Bit Buffer_Bit::Accum   = {GL_ACCUM_BUFFER_BIT};
-    const Buffer_Bit Buffer_Bit::Stencil = {GL_STENCIL_BUFFER_BIT};
+    const Buffer_Bit Buffer_Bit::COLOR   = {GL_COLOR_BUFFER_BIT};
+    const Buffer_Bit Buffer_Bit::DEPTH   = {GL_DEPTH_BUFFER_BIT};
+    const Buffer_Bit Buffer_Bit::ACCUM   = {GL_ACCUM_BUFFER_BIT};
+    const Buffer_Bit Buffer_Bit::STENCIL = {GL_STENCIL_BUFFER_BIT};
 
     ALWAYS_INLINE void clear(Buffer_Bit buffer)
     {
