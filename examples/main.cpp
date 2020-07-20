@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
 
     auto tile_buffer = gl::genBuffer();
     gl::bindBuffer(gl::Buffer_Target::ARRAY, tile_buffer);
-    gl::bufferData(gl::Buffer_Target::ARRAY, sizeof(tiles), tiles, gl::STATIC_DRAW);
+    gl::bufferData(gl::Buffer_Target::ARRAY, sizeof(tiles), tiles, gl::Buffer_Usage::STATIC_DRAW);
 
     gl::Attribute_ID tileAttrib = {0};
     gl::bindAttribLocation(program, tileAttrib, "tile");
