@@ -96,7 +96,7 @@
 - [ ] glGenRenderbuffers
 - [ ] glGenSamplers
 - [ ] glGenTextures
-- [-] glGenVertexArrays -> gl::genVertexArray
+- [+] glGenVertexArrays -> gl::genVertexArray, gl::genVertexArrays
 - [ ] glGetActiveAttrib
 - [ ] glGetActiveUniformBlockName
 - [ ] glGetActiveUniformBlock

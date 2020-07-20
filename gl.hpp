@@ -267,7 +267,20 @@ namespace gl
         GLuint unwrap;
     };
 
-    // TODO: gl::genVertexArrays() that generates several Vertex Arrays
+    ALWAYS_INLINE void genVertexArrays(GLsizei n, Vertex_Array *arrays)
+    {
+        static_assert(
+                sizeof(Vertex_Array) == sizeof(GLuint),
+                "Cannot use gl::genVertexArrays properly because it makes an assumption "
+                "that sizeof(Vertex_Array) is equal to sizeof(GLuint). But this is not true "
+                "on this machine. Probably due to the compiler padding the Vertex_Array structure. "
+                "This is definitely a bug of gl.hpp and result of the laziness of its developers. "
+                "Welcome to Open Source. :) "
+                "Please submit an Issue or a Pull Request to https://github.com/tsoding/gl.hpp");
+        glGenVertexArrays(n, reinterpret_cast<GLuint*>(arrays));
+        ASSERT_GL_ERROR;
+    }
+
     ALWAYS_INLINE Vertex_Array genVertexArray()
     {
         GLuint id = {};
