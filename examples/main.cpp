@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
 
     glfwMakeContextCurrent(window);
 
-    printf("OpenGL Version: %s\n", gl::getString(gl::VERSION));
+    printf("OpenGL Version: %s\n", gl::getString(gl::String_Name::VERSION));
 
     glDebugMessageCallback(funcname, NULL);
 

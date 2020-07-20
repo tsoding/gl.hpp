@@ -416,7 +416,7 @@ namespace gl
         ASSERT_GL_ERROR;
     }
 
-    enum String_Name
+    enum class String_Name
     {
         VENDOR                    = GL_VENDOR,
         RENDERER                  = GL_RENDERER,
