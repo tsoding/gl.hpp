@@ -20,10 +20,11 @@ For example, let's consider two functions and two types:
 namespace gl {
     // ...
 
-    enum Shader_Type
+    enum class Shader_Type
     {
-        VERTEX_SHADER,
-        FRAGMENT_SHADER
+        Vertex = GL_SHADER_VERTEX,
+        Fragment = GL_SHADER_FRAGMENT,
+        Geometry = GL_SHADER_GEOMETRY
     };
 
     struct Shader

@@ -118,8 +118,8 @@ int main(int argc, char *argv[])
 
     glDebugMessageCallback(funcname, NULL);
 
-    auto vert = read_and_compile_shader(gl::VERTEX_SHADER, "shader.vert");
-    auto frag = read_and_compile_shader(gl::FRAGMENT_SHADER, "shader.frag");
+    auto vert = read_and_compile_shader(gl::Shader_Type::Vertex, "shader.vert");
+    auto frag = read_and_compile_shader(gl::Shader_Type::Fragment, "shader.frag");
     auto program = link_program(vert, frag);
     gl::useProgram(program);
 

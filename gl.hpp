@@ -58,11 +58,11 @@ namespace gl
         ASSERT_GL_ERROR;
     }
 
-    enum Shader_Type
+    enum class Shader_Type
     {
-        VERTEX_SHADER = GL_VERTEX_SHADER,
-        FRAGMENT_SHADER = GL_FRAGMENT_SHADER,
-        GEOMETRY_SHADER = GL_GEOMETRY_SHADER
+        Vertex   = GL_VERTEX_SHADER,
+        Fragment = GL_FRAGMENT_SHADER,
+        Geometry = GL_GEOMETRY_SHADER
     };
 
     struct Shader
@@ -72,7 +72,7 @@ namespace gl
 
     ALWAYS_INLINE Shader createShader(Shader_Type type)
     {
-        auto shader = glCreateShader((GLenum)type);
+        auto shader = glCreateShader(static_cast<GLenum>(type));
         ASSERT_GL_ERROR;
         return Shader { shader };
     }
