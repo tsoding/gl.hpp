@@ -132,7 +132,7 @@ namespace gl
         GLint param = 0;
         glGetShaderiv(shader.unwrap, GL_COMPILE_STATUS, &param);
         ASSERT_GL_ERROR;
-        return (bool) param;
+        return static_cast<bool>(param);
     }
 
     ALWAYS_INLINE void deleteObject(Shader shader)
@@ -176,7 +176,7 @@ namespace gl
         GLint linked = 0;
         glGetProgramiv(program.unwrap, GL_LINK_STATUS, &linked);
         ASSERT_GL_ERROR;
-        return (bool) linked;
+        return static_cast<bool>(linked);
     }
 
     template <GLsizei Max_Length>
@@ -361,7 +361,7 @@ namespace gl
         if (id < 0) {
             return {};
         } else {
-            return {true, {(GLuint)id}};
+            return {true, {static_cast<GLuint>(id)}};
         }
     }
 
@@ -383,8 +383,8 @@ namespace gl
     {
         glVertexAttribPointer(
             index.unwrap,
-            (GLint) size,
-            (GLenum) type,
+            static_cast<GLint>(size),
+            static_cast<GLenum>(type),
             normalized,
             stride,
             pointer);
@@ -428,7 +428,7 @@ namespace gl
     ALWAYS_INLINE
     const GLubyte *getString(String_Name name)
     {
-        return glGetString((GLenum)name);
+        return glGetString(static_cast<GLenum>(name));
     }
 
     enum class Element_Index_Type
@@ -443,7 +443,11 @@ namespace gl
                       Element_Index_Type type,
                       const GLvoid *indices)
     {
-        glDrawElements(static_cast<GLenum>(mode), count, (GLenum) type, indices);
+        glDrawElements(
+                static_cast<GLenum>(mode), 
+                count, 
+                static_cast<GLenum>(type), 
+                indices);
         ASSERT_GL_ERROR;
     }
 
