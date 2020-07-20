@@ -45,3 +45,8 @@ to pass incorrect values to `gl::createShader` and
 2. the signatures of the functions "document" the fact `Shader` comes
 from `gl::createShader` and should be put into `gl::compileShader`
 later.
+
+One thing to note is that all of the above is probably a non-problem for an
+experienced OpenGL programmer since they have probably memorized all of the
+semantic function connections and pitfalls of the API. This library is aimed
+at people who only learning OpenGL.
