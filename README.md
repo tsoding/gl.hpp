@@ -9,7 +9,7 @@ bindings](https://github.com/haskell-opengl/OpenGL/).
 
 ## Goal
 
-The goal is to establish a semantic connections between OpenGL
+The goal is to establish semantic connections between OpenGL
 functions using strong types like `Program`, `Shader`, `Buffer`, etc,
 that are not just numbers but separate incompatible with each other
 types.
@@ -18,6 +18,8 @@ For example, let's consider two functions and two types:
 
 ```c++
 namespace gl {
+    // ...
+
     enum Shader_Type
     {
         VERTEX_SHADER,
@@ -29,8 +31,10 @@ namespace gl {
         GLuint unwrap;
     };
 
-    ALWAYS_INLINE Shader createShader(Shader_Type type);
-    ALWAYS_INLINE void compileShader(Shader shader)
+    Shader createShader(Shader_Type type);
+    void compileShader(Shader shader);
+
+    // ...
 }
 ```
 
