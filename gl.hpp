@@ -201,7 +201,7 @@ namespace gl
         ASSERT_GL_ERROR;
     }
 
-    enum Mode {
+    enum class Draw_Mode {
         POINTS                   = GL_POINTS,
         LINE_STRIP               = GL_LINE_STRIP,
         LINE_LOOP                = GL_LINE_LOOP,
@@ -215,9 +215,9 @@ namespace gl
         TRIANGLES_ADJACENCY      = GL_TRIANGLES_ADJACENCY
     };
 
-    ALWAYS_INLINE void drawArrays(Mode mode, GLint first, GLsizei count)
+    ALWAYS_INLINE void drawArrays(Draw_Mode mode, GLint first, GLsizei count)
     {
-        glDrawArrays((GLenum) mode, first, count);
+        glDrawArrays(static_cast<GLenum>(mode), first, count);
         ASSERT_GL_ERROR;
     }
 
@@ -430,12 +430,12 @@ namespace gl
         EIT_UNSIGNED_INT   = GL_UNSIGNED_INT,
     };
 
-    void drawElements(Mode mode,
+    void drawElements(Draw_Mode mode,
                       GLsizei count,
                       Element_Index_Type type,
                       const GLvoid *indices)
     {
-        glDrawElements((GLenum) mode, count, (GLenum) type, indices);
+        glDrawElements(static_cast<GLenum>(mode), count, (GLenum) type, indices);
         ASSERT_GL_ERROR;
     }
 

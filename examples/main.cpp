@@ -157,7 +157,7 @@ int main(int argc, char *argv[])
         gl::uniform(u_time, time);
 
         gl::bindVertexArray(vao);
-        gl::drawArrays(gl::TRIANGLE_STRIP, 0, sizeof(tiles) / sizeof(tiles[0]));
+        gl::drawArrays(gl::Draw_Mode::TRIANGLE_STRIP, 0, sizeof(tiles) / sizeof(tiles[0]));
 
         glfwSwapBuffers(window);
         glfwPollEvents();
