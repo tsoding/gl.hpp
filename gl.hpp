@@ -2,11 +2,14 @@
 #define GL_HPP
 
 #if defined(__GNUC__) || defined(__clang__)
-#define ALWAYS_INLINE __attribute__((always_inline)) inline
+#    define ALWAYS_INLINE __attribute__((always_inline)) inline
+#    define PACKED __attribute__((packed))
 #elif defined(_MSC_VER)
-#define ALWAYS_INLINE __forceinline
+#    define ALWAYS_INLINE __forceinline
+#    define PACKED
 #else
-#define ALWAYS_INLINE inline
+#    define ALWAYS_INLINE inline
+#    define PACKED
 #endif
 
 template <typename T>
@@ -17,24 +20,24 @@ struct Maybe
 };
 
 #ifndef ASSERT_GL_ERROR
-#ifdef GL_HPP_ASSERT_GL_ERRORS
-#define ASSERT_GL_ERROR assert(glGetError() == GL_NO_ERROR)
-#else
-#define ASSERT_GL_ERROR do {} while(0)
-#endif
+#    ifdef GL_HPP_ASSERT_GL_ERRORS
+#        define ASSERT_GL_ERROR assert(glGetError() == GL_NO_ERROR)
+#    else
+#        define ASSERT_GL_ERROR do {} while(0)
+#    endif
 #endif
 
 // TODO: gl.hpp supports only OpenGL 3.0 for now
 
 namespace gl
 {
-    struct Color4
+    struct PACKED Color4
     {
         GLclampf r, g, b, a;
     };
 
     template <typename That>
-    struct Bit_Field
+    struct PACKED Bit_Field
     {
         GLbitfield unwrap;
 
@@ -46,7 +49,7 @@ namespace gl
         ALWAYS_INLINE That operator~ ()          const { return {~unwrap}; }
     };
 
-    struct Buffer_Bit: public Bit_Field<Buffer_Bit> {
+    struct PACKED Buffer_Bit: public Bit_Field<Buffer_Bit> {
         static const Buffer_Bit COLOR;
         static const Buffer_Bit DEPTH;
         static const Buffer_Bit ACCUM;
@@ -77,7 +80,7 @@ namespace gl
         Geometry = GL_GEOMETRY_SHADER
     };
 
-    struct Shader
+    struct PACKED Shader
     {
         GLuint unwrap;
     };
@@ -141,7 +144,7 @@ namespace gl
         ASSERT_GL_ERROR;
     }
 
-    struct Program
+    struct PACKED Program
     {
         GLuint unwrap;
     };
@@ -221,13 +224,13 @@ namespace gl
         ASSERT_GL_ERROR;
     }
 
-    struct Uniform
+    struct PACKED Uniform
     {
         GLint unwrap;
     };
 
     template <typename T>
-    struct Vec2
+    struct PACKED Vec2
     {
         T x, y;
     };
@@ -263,17 +266,17 @@ namespace gl
         ASSERT_GL_ERROR;
     }
 
-    struct Vertex_Array
+    struct PACKED Vertex_Array
     {
         GLuint unwrap;
     };
 
     ALWAYS_INLINE Vertex_Array genVertexArray()
     {
-        Vertex_Array result = {};
-        glGenVertexArrays(1, &result.unwrap);
+        GLuint id = {};
+        glGenVertexArrays(1, &id);
         ASSERT_GL_ERROR;
-        return result;
+        return {id};
     }
 
     ALWAYS_INLINE void bindVertexArray(Vertex_Array array)
@@ -282,7 +285,7 @@ namespace gl
         ASSERT_GL_ERROR;
     }
 
-    struct Buffer
+    struct PACKED Buffer
     {
         GLuint unwrap;
     };
@@ -302,10 +305,10 @@ namespace gl
 
     ALWAYS_INLINE Buffer genBuffer()
     {
-        Buffer result = {};
-        glGenBuffers(1, &result.unwrap);
+        GLuint id = {};
+        glGenBuffers(1, &id);
         ASSERT_GL_ERROR;
-        return result;
+        return {id};
     }
 
     enum class Buffer_Target
@@ -344,7 +347,7 @@ namespace gl
         ASSERT_GL_ERROR;
     }
 
-    struct Attribute_Location
+    struct PACKED Attribute_Location
     {
         GLuint unwrap;
     };
