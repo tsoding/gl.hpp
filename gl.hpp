@@ -53,7 +53,8 @@ namespace gl
     enum Shader_Type
     {
         VERTEX_SHADER = GL_VERTEX_SHADER,
-        FRAGMENT_SHADER = GL_FRAGMENT_SHADER
+        FRAGMENT_SHADER = GL_FRAGMENT_SHADER,
+        GEOMETRY_SHADER = GL_GEOMETRY_SHADER
     };
 
     struct Shader
