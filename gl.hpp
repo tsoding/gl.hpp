@@ -38,11 +38,12 @@ namespace gl
     {
         GLbitfield unwrap;
 
-        ALWAYS_INLINE That operator| (That that) const { return {unwrap | that.unwrap}; }
-        ALWAYS_INLINE That operator& (That that) const { return {unwrap & that.unwrap}; }
-        ALWAYS_INLINE That operator^ (That that) const { return {unwrap ^ that.unwrap}; }
+        ALWAYS_INLINE That operator| (That that) const { return {unwrap |  that.unwrap}; }
+        ALWAYS_INLINE That operator& (That that) const { return {unwrap &  that.unwrap}; }
+        ALWAYS_INLINE That operator^ (That that) const { return {unwrap ^  that.unwrap}; }
         ALWAYS_INLINE That operator>>(That that) const { return {unwrap >> that.unwrap}; }
         ALWAYS_INLINE That operator<<(That that) const { return {unwrap << that.unwrap}; }
+        ALWAYS_INLINE That operator~ ()          const { return {~unwrap}; }
     };
 
     struct Buffer_Bit: public Bit_Field<Buffer_Bit> {
