@@ -4,19 +4,23 @@ using namespace aids;
 
 struct String_Buffer
 {
-    char *data;
     size_t capacity;
     size_t count;
+    char *data;
 
     void clean()
     {
         count = 0;
     }
 
-    void push(char x)
+    bool push(char x)
     {
-        assert(count < capacity);
-        data[count++] = x;
+        if (count < capacity) {
+            data[count++] = x;
+            return true;
+        }
+
+        return false;
     }
 
     String_View to_view()
@@ -41,11 +45,11 @@ String_View chop_csv_field(String_View *line, char delim, char esc,
             return field;
         } else if (*line->data == esc && line->count > 1) {
             line->chop(1);
-            buffer->push(*line->data);
+            { bool ok = buffer->push(*line->data); assert(ok); }
             field.grow(1);
             line->chop(1);
         } else {
-            buffer->push(*line->data);
+            { bool ok = buffer->push(*line->data); assert(ok); }
             field.grow(1);
             line->chop(1);
         }
