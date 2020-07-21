@@ -21,13 +21,20 @@
 //
 // ============================================================
 //
-// aids — 0.0.3 — std replacement for C++. Designed to aid developers
+// aids — 0.2.0 — std replacement for C++. Designed to aid developers
 // to a better programming experience.
+//
+// https://github.com/rexim/aids
 //
 // ============================================================
 //
 // ChangeLog (https://semver.org/ is implied)
 //
+//   0.2.0  unwrap_into
+//          print1 for long int
+//   0.1.0  print1 for long unsigned int
+//          print1 for int
+//          Pad
 //   0.0.3  bugfix for print1 of Maybe<T>
 //   0.0.2  fix sign-unsigned integer comparison in aids::read_file_as_string_view
 //   0.0.1  min, max, clamp,
@@ -95,7 +102,7 @@ namespace aids
 #define defer(code)   auto DEFER_3(_defer_) = ::aids::defer_func([&](){code;})
 
     ////////////////////////////////////////////////////////////
-    // Maybe
+    // MAYBE
     ////////////////////////////////////////////////////////////
 
     template <typename T>
@@ -104,6 +111,13 @@ namespace aids
         bool has_value;
         T unwrap;
     };
+
+#define unwrap_into(lvalue, maybe)              \
+    do {                                        \
+        auto maybe_var = (maybe);               \
+        if (!maybe_var.has_value) return {};    \
+        (lvalue) = maybe_var.unwrap;            \
+    } while (0)
 
     ////////////////////////////////////////////////////////////
     // STRING_VIEW
@@ -350,6 +364,21 @@ namespace aids
         fprintf(stream, "%lld", x);
     }
 
+    void print1(FILE *stream, long unsigned int x)
+    {
+        fprintf(stream, "%lu", x);
+    }
+
+    void print1(FILE *stream, int x)
+    {
+        fprintf(stream, "%d", x);
+    }
+
+    void print1(FILE *stream, long int x)
+    {
+        fprintf(stream, "%ld", x);
+    }
+
     template <typename ... Types>
     void print(FILE *stream, Types... args)
     {
@@ -371,6 +400,19 @@ namespace aids
     {
         (print1(stream, args), ...);
         print1(stream, '\n');
+    }
+
+    struct Pad
+    {
+        size_t n;
+        char c;
+    };
+
+    void print1(FILE *stream, Pad pad)
+    {
+        for (size_t i = 0; i < pad.n; ++i) {
+            fputc(pad.c, stream);
+        }
     }
 }
 
