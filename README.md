@@ -50,3 +50,11 @@ One thing to note is that all of the above is probably a non-problem for an
 experienced OpenGL programmer since they have probably memorized all of the
 semantic function connections and pitfalls of the API. This library is aimed
 at experienced programmers who's only learning OpenGL.
+
+## OpenGL 3 API coverage progress
+
+```console
+$ cd tools
+$ make
+$ ./coverage summary ../TODO.gl3.csv
+```
