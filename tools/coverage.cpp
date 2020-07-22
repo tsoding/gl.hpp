@@ -131,14 +131,14 @@ void done_subcommand(const char *file_path)
 {
     Csv csv = csv_from_file(file_path);
 
-    while (csv.next_row()) {
+    for (size_t line = 1; csv.next_row(); ++line) {
         auto implemented = csv.next_field();
         auto name = csv.next_field();
         assert(implemented.has_value);
         assert(name.has_value);
 
         if (implemented.unwrap == "+"_sv) {
-            println(stdout, name.unwrap);
+            println(stdout, file_path, ":", line, ": ", name.unwrap);
         }
     }
 }
@@ -147,14 +147,14 @@ void todo_subcommand(const char *file_path)
 {
     Csv csv = csv_from_file(file_path);
 
-    while (csv.next_row()) {
+    for (size_t line = 1; csv.next_row(); ++line) {
         auto implemented = csv.next_field();
         auto name = csv.next_field();
         assert(implemented.has_value);
         assert(name.has_value);
 
         if (implemented.unwrap != "+"_sv) {
-            println(stdout, name.unwrap);
+            println(stdout, file_path, ":", line, ": ", name.unwrap);
         }
     }
 }
