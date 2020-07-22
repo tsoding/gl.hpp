@@ -170,6 +170,8 @@ int main(int argc, char *argv[])
         time += delta_time;
     }
 
+    gl::deleteObjects(1, &tile_buffer);
+
     glfwTerminate();
 
     return 0;

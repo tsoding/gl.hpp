@@ -47,7 +47,7 @@
 + , glCreateProgram ,  -> gl::createProgram
 + , glCreateShader ,  -> gl::createShader
   , glCullFace , 
-  , glDeleteBuffers , 
++ , glDeleteBuffers , gl::deleteObject, gl::deleteObjects
   , glDeleteFramebuffers , 
 + , glDeleteProgram ,  -> gl::deleteProgram
   , glDeleteQueries , 

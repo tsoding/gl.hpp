@@ -138,9 +138,35 @@ namespace gl
         return static_cast<bool>(param);
     }
 
+    struct PACKED Buffer
+    {
+        GLuint unwrap;
+    };
+
     ALWAYS_INLINE void deleteObject(Shader shader)
     {
         glDeleteShader(shader.unwrap);
+        ASSERT_GL_ERROR;
+    }
+
+    ALWAYS_INLINE void deleteObject(Buffer buffer)
+    {
+        GLuint id = buffer.unwrap;
+        glDeleteBuffers(1, &id);
+        ASSERT_GL_ERROR;
+    }
+
+    ALWAYS_INLINE void deleteObjects(GLsizei n, Buffer *buffers)
+    {
+        static_assert(
+                sizeof(Buffer) == sizeof(GLuint),
+                "Cannot use gl::deleteObjects(GLsizei n, Buffer *buffers), properly because it makes an assumption "
+                "that sizeof(Buffer) is equal to sizeof(GLuint). But this is not true "
+                "on this machine. Probably due to the compiler padding the Buffer structure. "
+                "This is definitely a bug of gl.hpp and result of the laziness of its developers. "
+                "Welcome to Open Source. :) "
+                "Please submit an Issue or a Pull Request to https://github.com/tsoding/gl.hpp");
+        glDeleteBuffers(n, reinterpret_cast<GLuint*>(buffers));
         ASSERT_GL_ERROR;
     }
 
@@ -294,11 +320,6 @@ namespace gl
         glBindVertexArray(array.unwrap);
         ASSERT_GL_ERROR;
     }
-
-    struct PACKED Buffer
-    {
-        GLuint unwrap;
-    };
 
     ALWAYS_INLINE void genBuffers(GLsizei n, Buffer *buffers)
     {
