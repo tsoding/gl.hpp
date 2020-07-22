@@ -103,9 +103,10 @@ void usage(FILE *stream)
     println(stream,
             "Usage: ./coverage <subcommand> <subcommand-args>\n"
             "Subcommands:\n"
-            "    summary <todo-filepath>          Print the summary of the implementation coverage\n"
-            "    done <todo-filepath>             Print the list of implemented functions\n"
-            "    todo <todo-filepath>             Print the list of not implemented functions\n");
+            "    summary <todo-filepath>          Print the summary of the implementation coverage.\n"
+            "    done <todo-filepath>             Print the list of implemented functions.\n"
+            "    todo <todo-filepath>             Print the list of not implemented functions.\n"
+            "    help                             Print print this help text to stdout.");
 }
 
 void summary_subcommand(const char *file_path)
@@ -137,7 +138,7 @@ void done_subcommand(const char *file_path)
         assert(name.has_value);
 
         if (implemented.unwrap == "+"_sv) {
-            println(stdout, name);
+            println(stdout, name.unwrap);
         }
     }
 }
@@ -153,7 +154,7 @@ void todo_subcommand(const char *file_path)
         assert(name.has_value);
 
         if (implemented.unwrap != "+"_sv) {
-            println(stdout, name);
+            println(stdout, name.unwrap);
         }
     }
 }
@@ -184,7 +185,7 @@ int main(int argc, char *argv[])
     args.pop();
 
     if (args.empty()) {
-        println(stderr, "[ERROR] subcommand is not provided\n");
+        println(stderr, "[ERROR] subcommand is not provided");
         usage(stderr);
         return -1;
     }
@@ -193,7 +194,7 @@ int main(int argc, char *argv[])
 
     if (subcommand == "summary"_sv) {
         if (args.empty()) {
-            println(stderr, "[ERROR] filepath is not provided for todo subcommand\n");
+            println(stderr, "[ERROR] filepath is not provided for todo subcommand");
             usage(stderr);
             return -1;
         }
@@ -201,7 +202,7 @@ int main(int argc, char *argv[])
         summary_subcommand(args.pop());
     } else if (subcommand == "done"_sv) {
         if (args.empty()) {
-            println(stderr, "[ERROR] filepath is not provided for done subcommand\n");
+            println(stderr, "[ERROR] filepath is not provided for done subcommand");
             usage(stderr);
             return -1;
         }
@@ -209,12 +210,18 @@ int main(int argc, char *argv[])
         done_subcommand(args.pop());
     } else if (subcommand == "todo"_sv) {
         if (args.empty()) {
-            println(stderr, "[ERROR] filepath is not provided for todo subcommand\n");
+            println(stderr, "[ERROR] filepath is not provided for todo subcommand");
             usage(stderr);
             return -1;
         }
 
         todo_subcommand(args.pop());
+    } else if (subcommand == "help"_sv){
+        usage(stdout);
+    } else {
+        println(stderr, "[ERROR] unknown subcommand `", subcommand, "`");
+        usage(stderr);
+        return -1;
     }
 
     return 0;
