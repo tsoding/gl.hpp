@@ -2,6 +2,8 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 
+#define ARRAY_LEN(xs) (sizeof(xs) / sizeof(xs[0]))
+
 using namespace aids;
 
 void print1(FILE *stream, const xmlChar *s)
@@ -9,16 +11,23 @@ void print1(FILE *stream, const xmlChar *s)
     fwrite(s, 1, strlen((const char *)s), stream);
 }
 
-xmlNodePtr find_child(xmlNodePtr node, const xmlChar *name)
+template <typename Node>
+Node find_node(Node node, const xmlChar *name)
 {
-    auto child = node->children;
-    while (child) {
-        if (xmlStrcmp(child->name, name) == 0) {
-            return child;
-        }
+    while (node && xmlStrcmp(node->name, name) != 0) {
+        node = node->next;
+    }
+    return node;
+}
+
+template <typename Parent>
+auto find_child(Parent parent, const xmlChar *name)
+{
+    auto child = parent->children;
+    while (child && xmlStrcmp(child->name, name) != 0) {
         child = child->next;
     }
-    return 0;
+    return child;
 }
 
 template <typename Node>
@@ -85,15 +94,93 @@ void print_footer(FILE *stream)
     println(stream, "#endif  // GL_HPP_");
 }
 
+void gen_subcommand(xmlDocPtr doc)
+{
+    xmlNodePtr groupsNode = find_child(doc->children, (const xmlChar*)"groups");
+    xmlNodePtr commandsNode = find_child(doc->children, (const xmlChar*)"commands");
+
+    print_header(stdout);
+    generate_groups(stdout, groupsNode);
+    generate_commands(stdout, commandsNode);
+    print_footer(stdout);
+}
+
+void depg_subcommand(xmlDocPtr doc)
+{
+    xmlNodePtr groupsNode = find_child(doc->children, (const xmlChar*)"groups");
+    auto iter = groupsNode->children;
+    while (iter) {
+        if (xmlStrcmp(iter->name, (const xmlChar*) "group") == 0) {
+            auto name = find_node(iter->properties, (const xmlChar*) "name");
+            auto comment = find_node(iter->properties, (const xmlChar*) "comment");
+            println(stdout, name->children->content, " -> ", comment->children->content);
+        }
+        iter = iter->next;
+    }
+}
+
+struct Subcommand
+{
+    String_View name;
+    void (*run)(xmlDocPtr doc);
+    String_View help;
+};
+
+Subcommand subcommands[] = {
+    {"gen"_sv, gen_subcommand, "Generate the gl.hpp from <spec.xml>"_sv},
+    {"depg"_sv, depg_subcommand, "Print deprecated enumeration groups"_sv},
+};
+
+void usage(FILE *stream)
+{
+    println(stream, "Not enough arguments provided");
+    println(stream, "Usage: spec <spec.xml> <subcommand>");
+    println(stream, "Subcommands:");
+
+    const size_t WIDTH = 10;
+
+    for (size_t i = 0; i < ARRAY_LEN(subcommands); ++i) {
+        const size_t name_width = subcommands[i].name.count;
+        println(stream, 
+                "    ", 
+                subcommands[i].name, 
+                Pad {name_width > WIDTH ? 0 : WIDTH - name_width, ' '}, 
+                subcommands[i].help);
+    }
+}
+
+struct Args
+{
+    int argc;
+    char **argv;
+
+    bool empty()
+    {
+        return argc == 0;
+    }
+
+    const char *pop()
+    {
+        assert(!empty());
+        const char *result = *argv;
+        argc -= 1;
+        argv += 1;
+        return result;
+    }
+};
+
 int main(int argc, char *argv[])
 {
-    if (argc < 2) {
-        println(stderr, "Not enough arguments provided");
-        println(stderr, "Usage: spec <spec.xml>");
+    Args args = {argc, argv};
+    args.pop();
+
+    if (args.empty()) {
+        println(stderr, "[ERROR] Spec XML file is not provided");
+        usage(stderr);
         exit(1);
     }
 
-    const char *filepath = argv[1];
+    const char *filepath = args.pop();
 
     auto maybeContent = read_file_as_string_view(filepath);
     if (!maybeContent.has_value) {
@@ -105,21 +192,27 @@ int main(int argc, char *argv[])
 
     LIBXML_TEST_VERSION;
 
-    xmlDocPtr doc = xmlReadMemory(
-        content.data, content.count,
-        "noname.xml", NULL, 0);
+    xmlDocPtr doc = xmlReadMemory(content.data, content.count, "noname.xml", NULL, 0);
+    defer(xmlCleanupParser());
+    defer(xmlMemoryDump());
 
-    xmlNodePtr groupsNode = find_child(doc->children, (const xmlChar*)"groups");
-    xmlNodePtr commandsNode = find_child(doc->children, (const xmlChar*)"commands");
+    if (args.empty()) {
+        println(stderr, "[ERROR] subcommand is not provided");
+        usage(stderr);
+        exit(1);
+    }
 
-    print_header(stdout);
-    generate_groups(stdout, groupsNode);
-    generate_commands(stdout, commandsNode);
-    print_footer(stdout);
+    const char *subcommand = args.pop();
 
+    for (size_t i = 0; i < ARRAY_LEN(subcommands); ++i) {
+        if (subcommands[i].name == cstr_as_string_view(subcommand)) {
+            subcommands[i].run(doc);
+            return 0;
+        }
+    }
 
-    xmlCleanupParser();
-    xmlMemoryDump();
+    println(stderr, "Subcommand `", subcommand, "` does not exist");
+    usage(stderr);
 
-    return 0;
+    return 1;
 }
