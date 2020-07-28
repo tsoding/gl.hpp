@@ -6,9 +6,23 @@
 
 using namespace aids;
 
+const xmlChar *operator""_xml(const char *s, size_t)
+{
+    return (const xmlChar *)s;
+}
+
 void print1(FILE *stream, const xmlChar *s)
 {
     fwrite(s, 1, strlen((const char *)s), stream);
+}
+
+bool xmlstr_has_prefix(const xmlChar *s, const xmlChar *prefix)
+{
+    while (*s && *prefix && *s == *prefix) { 
+        s += 1;
+        prefix += 1;
+    };
+    return *prefix == 0;
 }
 
 template <typename Node>
@@ -45,7 +59,7 @@ void generate_enum_from_group(FILE *stream, xmlNodePtr groupNode)
     println(stream, "enum class ", groupNode->properties->children->content, " {");
     xmlNodePtr iter = groupNode->children;
     while (iter) {
-        if (xmlStrcmp(iter->name, (const xmlChar*)"enum") == 0) {
+        if (xmlStrcmp(iter->name, "enum"_xml) == 0) {
             println(stream, "    ", iter->properties->children->content + 3, " = ", iter->properties->children->content, ",");
         }
         iter = iter->next;
@@ -57,7 +71,7 @@ void generate_groups(FILE *stream, xmlNodePtr groupsNode)
 {
     xmlNodePtr iter = groupsNode->children;
     while (iter) {
-        if (xmlStrcmp(iter->name, (const xmlChar*)"group") == 0) {
+        if (xmlStrcmp(iter->name, "group"_xml) == 0) {
             generate_enum_from_group(stream, iter);
         }
         iter = iter->next;
@@ -73,7 +87,7 @@ void generate_commands(FILE *stream, xmlNodePtr commandsNode)
 {
     xmlNodePtr iter = commandsNode->children;
     while (iter) {
-        if (xmlStrcmp(iter->name, (const xmlChar*)"command") == 0) {
+        if (xmlStrcmp(iter->name, "command"_xml) == 0) {
             generate_function_from_command(stream, iter);
         }
         iter = iter->next;
@@ -96,8 +110,8 @@ void print_footer(FILE *stream)
 
 void gen_subcommand(xmlDocPtr doc)
 {
-    xmlNodePtr groupsNode = find_child(doc->children, (const xmlChar*)"groups");
-    xmlNodePtr commandsNode = find_child(doc->children, (const xmlChar*)"commands");
+    xmlNodePtr groupsNode = find_child(doc->children, "groups"_xml);
+    xmlNodePtr commandsNode = find_child(doc->children, "commands"_xml);
 
     print_header(stdout);
     generate_groups(stdout, groupsNode);
@@ -105,14 +119,14 @@ void gen_subcommand(xmlDocPtr doc)
     print_footer(stdout);
 }
 
-void depg_subcommand(xmlDocPtr doc)
+void commentg_subcommand(xmlDocPtr doc)
 {
-    xmlNodePtr groupsNode = find_child(doc->children, (const xmlChar*)"groups");
+    xmlNodePtr groupsNode = find_child(doc->children, "groups"_xml);
     auto iter = groupsNode->children;
     while (iter) {
-        if (xmlStrcmp(iter->name, (const xmlChar*) "group") == 0) {
-            auto name = find_node(iter->properties, (const xmlChar*) "name");
-            auto comment = find_node(iter->properties, (const xmlChar*) "comment");
+        if (xmlStrcmp(iter->name, "group"_xml) == 0) {
+            auto name = find_node(iter->properties, "name"_xml);
+            auto comment = find_node(iter->properties, "comment"_xml);
             println(stdout, name->children->content, " -> ", comment->children->content);
         }
         iter = iter->next;
@@ -128,7 +142,7 @@ struct Subcommand
 
 Subcommand subcommands[] = {
     {"gen"_sv, gen_subcommand, "Generate the gl.hpp from <spec.xml>"_sv},
-    {"depg"_sv, depg_subcommand, "Print deprecated enumeration groups"_sv},
+    {"commentg"_sv, commentg_subcommand, "Print group names and their comments"_sv},
 };
 
 void usage(FILE *stream)
