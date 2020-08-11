@@ -110,37 +110,12 @@ void print_footer(FILE *stream)
     println(stream, "#endif  // GL_HPP_");
 }
 
-void gen_subcommand(const char *filepath, xmlDocPtr doc)
-{
-    xmlNodePtr groupsNode = find_first_child(doc->children, "groups"_xml);
-    xmlNodePtr commandsNode = find_first_child(doc->children, "commands"_xml);
-
-    print_header(stdout);
-    generate_groups(stdout, groupsNode);
-    generate_commands(stdout, commandsNode);
-    print_footer(stdout);
-}
-
-void commentg_subcommand(const char *filepath, xmlDocPtr doc)
-{
-    xmlNodePtr groupsNode = find_first_child(doc->children, "groups"_xml);
-    auto iter = groupsNode->children;
-    while (iter) {
-        if (xmlStrcmp(iter->name, "group"_xml) == 0) {
-            auto name = find_node(iter->properties, "name"_xml);
-            auto comment = find_node(iter->properties, "comment"_xml);
-            println(stdout, name->children->content, " -> ", comment->children->content);
-        }
-        iter = iter->next;
-    }
-}
-
 String_View xmlstr_as_string_view(const xmlChar *xmlstr)
 {
     return cstr_as_string_view((const char *)xmlstr);
 }
 
-void enums_subcommand(const char *filepath, xmlDocPtr doc)
+void gen_subcommand(const char *filepath, xmlDocPtr doc)
 {
     std::map<String_View, std::map<String_View, String_View>> groups;
 
@@ -207,9 +182,7 @@ struct Subcommand
 };
 
 Subcommand subcommands[] = {
-    {"gen"_sv, gen_subcommand, "Generate the gl.hpp from <spec.xml>"_sv},
-    {"commentg"_sv, commentg_subcommand, "Print group names and their comments"_sv},
-    {"enums"_sv, enums_subcommand, "Print all enums"_sv},
+    {"gen"_sv, gen_subcommand, "Generate the gl.hpp from <spec.xml>"_sv}
 };
 
 void usage(FILE *stream)
