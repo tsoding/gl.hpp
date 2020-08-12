@@ -18,15 +18,6 @@ void print1(FILE *stream, const xmlChar *s)
     fwrite(s, 1, strlen((const char *)s), stream);
 }
 
-bool xmlstr_has_prefix(const xmlChar *s, const xmlChar *prefix)
-{
-    while (*s && *prefix && *s == *prefix) { 
-        s += 1;
-        prefix += 1;
-    };
-    return *prefix == 0;
-}
-
 template <typename Node>
 Node find_node(Node node, const xmlChar *name)
 {
@@ -34,66 +25,6 @@ Node find_node(Node node, const xmlChar *name)
         node = node->next;
     }
     return node;
-}
-
-template <typename Parent>
-auto find_first_child(Parent parent, const xmlChar *name)
-{
-    auto child = parent->children;
-    while (child && xmlStrcmp(child->name, name) != 0) {
-        child = child->next;
-    }
-    return child;
-}
-
-template <typename Node>
-void print_children(Node node)
-{
-    auto child = node->children;
-    while (child) {
-        println(stdout, child->name);
-        child = child->next;
-    }
-}
-
-void generate_enum_from_group(FILE *stream, xmlNodePtr groupNode)
-{
-    println(stream, "enum class ", groupNode->properties->children->content, " {");
-    xmlNodePtr iter = groupNode->children;
-    while (iter) {
-        if (xmlStrcmp(iter->name, "enum"_xml) == 0) {
-            println(stream, "    ", iter->properties->children->content + 3, " = ", iter->properties->children->content, ",");
-        }
-        iter = iter->next;
-    }
-    println(stream, "};");
-}
-
-void generate_groups(FILE *stream, xmlNodePtr groupsNode)
-{
-    xmlNodePtr iter = groupsNode->children;
-    while (iter) {
-        if (xmlStrcmp(iter->name, "group"_xml) == 0) {
-            generate_enum_from_group(stream, iter);
-        }
-        iter = iter->next;
-    }
-}
-
-void generate_function_from_command(FILE *stream, xmlNodePtr iter)
-{
-    // TODO: generate_function_from_command is not implemented
-}
-
-void generate_commands(FILE *stream, xmlNodePtr commandsNode)
-{
-    xmlNodePtr iter = commandsNode->children;
-    while (iter) {
-        if (xmlStrcmp(iter->name, "command"_xml) == 0) {
-            generate_function_from_command(stream, iter);
-        }
-        iter = iter->next;
-    }
 }
 
 void print_header(FILE *stream)
@@ -267,6 +198,5 @@ int main(int argc, char *argv[])
 
     println(stderr, "Subcommand `", subcommand, "` does not exist");
     usage(stderr);
-
     return 1;
 }

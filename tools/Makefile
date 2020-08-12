@@ -1,4 +1,4 @@
-CXXFLAGS=-Wall -std=c++17 -ggdb
+CXXFLAGS=-Wall -Wextra -pedantic -std=c++17 -ggdb
 
 all: spec
 
