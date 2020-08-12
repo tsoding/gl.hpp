@@ -46,52 +46,51 @@ String_View xmlstr_as_string_view(const xmlChar *xmlstr)
     return cstr_as_string_view((const char *)xmlstr);
 }
 
+#define FOREACH_CHILD(child, node) \
+    for (auto child = node->children; child; child = child->next) 
+#define FOREACH_CHILD_NAME(child, node, _name) \
+    FOREACH_CHILD(child, node) \
+        if (xmlStrcmp(child->name, _name) == 0)
+
+
 void gen_subcommand(const char *filepath, xmlDocPtr doc)
 {
     std::map<String_View, std::map<String_View, String_View>> groups;
 
     auto registry = doc->children;
-    auto enums = registry->children;
-    while (enums) {
-        if (xmlStrcmp(enums->name, "enums"_xml) == 0) {
-            auto enoom = enums->children;
-            while (enoom) {
-                if (xmlStrcmp(enoom->name, "enum"_xml) == 0) {
-                    auto group_prop = find_node(enoom->properties, "group"_xml);
-                    auto name_prop = find_node(enoom->properties, "name"_xml);
-                    if (!name_prop) {
-                        println(stdout, filepath, ":", enoom->line, ": enum without name found");
-                        fflush(stdout);
-                        abort();
-                    }
-                    auto name_text = xmlstr_as_string_view(name_prop->children->content);
-                    
-                    auto value_prop = find_node(enoom->properties, "value"_xml);
-                    if (!value_prop) {
-                        println(stdout, filepath, ":", enoom->line, ": enum without value found");
-                        fflush(stdout);
-                        abort();
-                    }
-                    auto value_text = xmlstr_as_string_view(value_prop->children->content);
-
-                    if (group_prop) {
-                        auto group_text = xmlstr_as_string_view(group_prop->children->content);
-                        
-                        while (group_text.count) {
-                            auto group = group_text.chop_by_delim(',');
-                            if (groups[group][name_text].count > 0) {
-                                println(stdout, filepath, ":", enoom->line, " enum value ", name_text, " is redefined");
-                                fflush(stdout);
-                                abort();
-                            }
-                            groups[group][name_text] = value_text;
-                        }
-                    }
-                }
-                enoom = enoom->next;
+    FOREACH_CHILD_NAME (enums, registry, "enums"_xml) {
+        FOREACH_CHILD_NAME (enoom, enums, "enum"_xml) {
+            auto group_prop = find_node(enoom->properties, "group"_xml);
+            auto name_prop = find_node(enoom->properties, "name"_xml);
+            if (!name_prop) {
+                println(stdout, filepath, ":", enoom->line, ": enum without name found");
+                fflush(stdout);
+                abort();
             }
-        } 
-        enums = enums->next;
+            auto name_text = xmlstr_as_string_view(name_prop->children->content);
+
+            auto value_prop = find_node(enoom->properties, "value"_xml);
+            if (!value_prop) {
+                println(stdout, filepath, ":", enoom->line, ": enum without value found");
+                fflush(stdout);
+                abort();
+            }
+            auto value_text = xmlstr_as_string_view(value_prop->children->content);
+
+            if (group_prop) {
+                auto group_text = xmlstr_as_string_view(group_prop->children->content);
+
+                while (group_text.count) {
+                    auto group = group_text.chop_by_delim(',');
+                    if (groups[group][name_text].count > 0) {
+                        println(stdout, filepath, ":", enoom->line, " enum value ", name_text, " is redefined");
+                        fflush(stdout);
+                        abort();
+                    }
+                    groups[group][name_text] = value_text;
+                }
+            }
+        }
     }
 
     print_header(stdout);
