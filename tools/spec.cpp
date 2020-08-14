@@ -1,5 +1,6 @@
 #include <set>
 #include <map>
+#include <vector>
 #include "aids.hpp"
 #include <libxml/parser.h>
 #include <libxml/tree.h>
@@ -104,6 +105,92 @@ void gen_subcommand(const char *filepath, xmlDocPtr doc)
     print_footer(stdout);
 }
 
+//#define DEBUG
+
+#ifdef DEBUG
+#define DEBUG_TAG(tag, ...) println(stdout, filepath, ":", (tag)->line, ": ", __VA_ARGS__)
+#else
+#define DEBUG_TAG(tag, ...)
+#endif
+
+struct Sig
+{
+    String_View name;
+    String_View type;
+};
+
+void print1(FILE *stream, Sig sig)
+{
+    print(stream, "{ name: \"", sig.name, "\", type: \"", sig.type, "\" }");
+}
+
+Sig extract_sig(const char *filepath, size_t level, xmlNodePtr node)
+{
+    Sig result = {};
+    
+    FOREACH_CHILD(child, node) {
+        if (xmlStrcmp(child->name, "text"_xml) != 0) {
+            DEBUG_TAG(child, Pad{level, ' '}, child->name);
+            if (xmlStrcmp(child->name, "name"_xml) == 0) {
+                DEBUG_TAG(child, Pad{level + 2, ' '}, child->children->content);
+                result.name = xmlstr_as_string_view(child->children->content);
+            } else if (xmlStrcmp(child->name, "ptype"_xml) == 0) {
+                DEBUG_TAG(child, Pad{level + 2, ' '}, child->children->content);
+                result.type = xmlstr_as_string_view(child->children->content);
+            }
+        }
+    }
+
+    return result;
+}
+
+void commands_subcommand(const char *filepath, xmlDocPtr doc)
+{
+    auto registry = doc->children;
+    FOREACH_CHILD_NAME(commands, registry, "commands"_xml) {
+        FOREACH_CHILD_NAME(command, commands, "command"_xml) {
+            DEBUG_TAG(command, "command");
+            Maybe<Sig> command_sig = {};
+            std::vector<Sig> command_params;
+            FOREACH_CHILD(prop, command) {
+                if (xmlStrcmp(prop->name, "text"_xml) != 0) {
+                    DEBUG_TAG(prop, Pad{2, ' '}, prop->name);
+                    if (xmlStrcmp(prop->name, "proto"_xml) == 0) {
+                        command_sig = {true, extract_sig(filepath, 4, prop)};
+                    } else if (xmlStrcmp(prop->name, "param"_xml) == 0) {
+                        command_params.push_back(extract_sig(filepath, 4, prop));
+                    }
+                }
+            }
+#ifndef DEBUG
+            assert(command_sig.has_value);
+
+            println(stdout, "// ", filepath, ":", command->line, ": ", command_sig.unwrap.name);
+            if (command_sig.unwrap.type.count == 0) {
+                print(stdout, "void");
+            } else {
+                print(stdout, command_sig.unwrap.type);
+            }
+            print(stdout, " ");
+            print(stdout, command_sig.unwrap.name);
+            print(stdout, "(");
+            bool first = true;
+            for (const auto &param: command_params) {
+                if (!first) {
+                    print(stdout, ", ");
+                }
+                print(stdout, param.type, ' ', param.name);
+                first = false;
+            }
+            print(stdout, ")");
+            println(stdout);
+#endif
+        }
+    }
+}
+
+#undef DEBUG_TAG
+
 struct Subcommand
 {
     String_View name;
@@ -112,7 +199,8 @@ struct Subcommand
 };
 
 Subcommand subcommands[] = {
-    {"gen"_sv, gen_subcommand, "Generate the gl.hpp from <spec.xml>"_sv}
+    {"gen"_sv, gen_subcommand, "Generate the gl.hpp from <spec.xml>"_sv},
+    {"commands"_sv, commands_subcommand, "Generate OpenGL commands"_sv},
 };
 
 void usage(FILE *stream)
