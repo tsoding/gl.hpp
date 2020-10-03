@@ -48,11 +48,41 @@ String_View xmlstr_as_string_view(const xmlChar *xmlstr)
 }
 
 #define FOREACH_CHILD(child, node) \
-    for (auto child = node->children; child; child = child->next) 
+    for (auto child = node->children, it = child; child; child = child->next, it = child, (void) it)
 #define FOREACH_CHILD_NAME(child, node, _name) \
     FOREACH_CHILD(child, node) \
         if (xmlStrcmp(child->name, _name) == 0)
 
+void commands_subcommand(const char *filepath, xmlDocPtr doc)
+{
+#define DEBUG_IT(...) println(stdout, filepath, ":", it->line, ": ", __VA_ARGS__)
+    const auto registry = doc->children;
+    FOREACH_CHILD_NAME(commands, registry, "commands"_xml) {
+        FOREACH_CHILD_NAME(command, commands, "command"_xml) {
+            DEBUG_IT("command");
+            FOREACH_CHILD(tag, command) {
+                if (xmlStrcmp(it->name, "text"_xml) != 0) {
+                    DEBUG_IT(Pad {2, ' '}, it->name);
+                    if (xmlStrcmp(it->name, "proto"_xml) == 0) {
+                        FOREACH_CHILD(proto_child, tag) {
+                            if (xmlStrcmp(it->name, "text"_xml) != 0) {
+                                DEBUG_IT(Pad {4, ' '}, it->name);
+                                DEBUG_IT(Pad {4, ' '}, it->children->content);
+                            }
+                        }
+                    } else if (xmlStrcmp(it->name, "param"_xml) == 0) {
+                        FOREACH_CHILD(params_child, tag) {
+                            if (xmlStrcmp(it->name, "text"_xml) != 0) {
+                                DEBUG_IT(Pad {4, ' '}, it->name);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+#undef DEBUG_IT
+}
 
 void gen_subcommand(const char *filepath, xmlDocPtr doc)
 {
@@ -127,7 +157,7 @@ void print1(FILE *stream, Sig sig)
 Sig extract_sig(const char *filepath, size_t level, xmlNodePtr node)
 {
     Sig result = {};
-    
+
     FOREACH_CHILD(child, node) {
         if (xmlStrcmp(child->name, "text"_xml) != 0) {
             DEBUG_TAG(child, Pad{level, ' '}, child->name);
@@ -213,38 +243,18 @@ void usage(FILE *stream)
 
     for (size_t i = 0; i < ARRAY_LEN(subcommands); ++i) {
         const size_t name_width = subcommands[i].name.count;
-        println(stream, 
-                "    ", 
-                subcommands[i].name, 
-                Pad {name_width > WIDTH ? 0 : WIDTH - name_width, ' '}, 
+        println(stream,
+                "    ",
+                subcommands[i].name,
+                Pad {name_width > WIDTH ? 0 : WIDTH - name_width, ' '},
                 subcommands[i].help);
     }
 }
 
-struct Args
-{
-    int argc;
-    char **argv;
-
-    bool empty()
-    {
-        return argc == 0;
-    }
-
-    const char *pop()
-    {
-        assert(!empty());
-        const char *result = *argv;
-        argc -= 1;
-        argv += 1;
-        return result;
-    }
-};
-
 int main(int argc, char *argv[])
 {
     Args args = {argc, argv};
-    args.pop();
+    args.shift();
 
     if (args.empty()) {
         println(stderr, "[ERROR] Spec XML file is not provided");
@@ -252,7 +262,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    const char *filepath = args.pop();
+    const char *filepath = args.shift();
 
     auto maybeContent = read_file_as_string_view(filepath);
     if (!maybeContent.has_value) {
@@ -274,7 +284,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    const char *subcommand = args.pop();
+    const char *subcommand = args.shift();
 
     for (size_t i = 0; i < ARRAY_LEN(subcommands); ++i) {
         if (subcommands[i].name == cstr_as_string_view(subcommand)) {

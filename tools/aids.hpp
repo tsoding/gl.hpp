@@ -21,7 +21,7 @@
 //
 // ============================================================
 //
-// aids — 0.7.0 — std replacement for C++. Designed to aid developers
+// aids — 0.18.0 — std replacement for C++. Designed to aid developers
 // to a better programming experience.
 //
 // https://github.com/rexim/aids
@@ -30,6 +30,28 @@
 //
 // ChangeLog (https://semver.org/ is implied)
 //
+//   0.18.0 Rename Args::pop() -> Args::shift()
+//          Add more details to Stretchy_Buffer deprecation message
+//   0.17.0 Dynamic_Array::concat()
+//          Dynamic_Array::expand_capacity()
+//   0.16.0 Dynamic_Array
+//          deprecate Stretchy_Buffer
+//   0.15.0 Make min() and max() variadic
+//   0.14.0 size_t String_View::count_chars(char x) const
+//   0.13.3 Fix control flow in utf8_get_code
+//   0.13.2 Fix magic constant types in utf8_get_code
+//   0.13.1 Remove macros from utf8_get_code implementation
+//   0.13.0 void print1(FILE *stream, unsigned int x)
+//          Maybe<uint32_t> utf8_get_code(String_View view, size_t *size)
+//   0.12.1 Fix print1 and sprint1 bug for unsigned long long
+//   0.12.0 void print1(FILE *stream, String_Buffer buffer)
+//          void sprint1(String_Buffer *buffer, String_Buffer another_buffer)
+//          String_View String_Buffer::view() const
+//   0.11.0 Caps
+//   0.10.0 sprint1(String_Buffer *buffer, String_View view)
+//   0.9.0  String_Buffer
+//          sprintln
+//   0.8.0  Args
 //   0.7.0  String_View::operator<()
 //          print1(FILE*, bool)
 //   0.6.0  swap
@@ -73,15 +95,29 @@ namespace aids
     ////////////////////////////////////////////////////////////
 
     template <typename T>
-    T min(T a, T b)
+    T min(T x)
     {
-        return a < b ? a : b;
+        return x;
+    }
+
+    template <typename T, typename... Rest>
+    T min(T x, Rest... rest)
+    {
+        auto y = min(rest...);
+        return x < y ? x : y;
     }
 
     template <typename T>
-    T max(T a, T b)
+    T max(T x)
     {
-        return a > b ? a : b;
+        return x;
+    }
+
+    template <typename T, typename... Rest>
+    T max(T x, Rest... rest)
+    {
+        auto y = max(rest...);
+        return x < y ? y : x;
     }
 
     template <typename T>
@@ -348,6 +384,17 @@ namespace aids
             return prefix.count <= this->count
                 && this->subview(0, prefix.count) == prefix;
         }
+
+        size_t count_chars(char x) const
+        {
+            size_t result = 0;
+            for (size_t i = 0; i < count; ++i) {
+                if (data[i] == x) {
+                    result += 1;
+                }
+            }
+            return result;
+        }
     };
 
     String_View operator ""_sv(const char *data, size_t count)
@@ -390,36 +437,265 @@ namespace aids
     }
 
     ////////////////////////////////////////////////////////////
-    // STRETCHY BUFFER
+    // DYNAMIC ARRAY
     ////////////////////////////////////////////////////////////
 
-    struct Stretchy_Buffer
+    template <typename T>
+    struct Dynamic_Array
     {
         size_t capacity;
         size_t size;
-        char *data;
+        T *data;
 
-        void push(const char *that_data, size_t that_size)
+        void expand_capacity()
         {
-            if (size + that_size > capacity) {
-                capacity = 2 * capacity + that_size;
-                data = (char*)realloc((void*)data, capacity);
-            }
-
-            memcpy(data + size, that_data, that_size);
-            size += that_size;
+            capacity = data ? 2 * capacity : 256;
+            data = (T*)realloc((void*)data, capacity * sizeof(T));
         }
 
-        template <typename T>
-        void push(T x)
+        void push(T item)
         {
-            push((char*) &x, sizeof(x));
+            while (size + 1 > capacity) {
+                expand_capacity();
+            }
+
+            memcpy(data + size, &item, sizeof(T));
+            size += 1;
+        }
+
+        void concat(const T *items, size_t items_count)
+        {
+            while (size + 1 > capacity) {
+                expand_capacity();
+            }
+
+            memcpy(data + size, items, sizeof(T) * items_count);
+            size += items_count;
+        }
+
+        bool contains(T item)
+        {
+            for (size_t i = 0; i < size; ++i) {
+                if (item == data[i]) {
+                    return true;
+                }
+            }
+
+            return false;
         }
     };
 
-    void print1(FILE *stream, Stretchy_Buffer buffer)
+    ////////////////////////////////////////////////////////////
+    // STRETCHY BUFFER
+    ////////////////////////////////////////////////////////////
+
+    namespace deprecated {
+        struct Stretchy_Buffer
+        {
+            size_t capacity;
+            size_t size;
+            char *data;
+
+            void push(const char *that_data, size_t that_size)
+            {
+                if (size + that_size > capacity) {
+                    capacity = 2 * capacity + that_size;
+                    data = (char*)realloc((void*)data, capacity);
+                }
+
+                memcpy(data + size, that_data, that_size);
+                size += that_size;
+            }
+
+            template <typename T>
+            void push(T x)
+            {
+                push((char*) &x, sizeof(x));
+            }
+        };
+    }
+
+    using Stretchy_Buffer [[deprecated("Use Dynamic_Array instead. Stretchy_Buffer is limited to only `char`-s while Dynamic_Array<T> can work with any type T.")]] = deprecated::Stretchy_Buffer;
+
+    [[deprecated("Use Dynamic_Array instead. Stretchy_Buffer is limited to only `char`-s while Dynamic_Array<T> can work with any type T.")]]
+    void print1(FILE *stream, deprecated::Stretchy_Buffer buffer)
     {
         fwrite(buffer.data, 1, buffer.size, stream);
+    }
+
+    ////////////////////////////////////////////////////////////
+    // ARGS
+    ////////////////////////////////////////////////////////////
+
+    struct Args
+    {
+        int argc;
+        char **argv;
+
+        [[deprecated("Use Args::shift() instead. It was decided to rename `pop` to `shift` since it creates confusion with the pop operation of stacks which removes the elements from the other end. And shift is common operation in Bash and Perl (probably others) for parsing command line arguments.")]]
+        char *pop()
+        {
+            return shift();
+        }
+
+        char *shift()
+        {
+            char *result = *argv;
+            argv += 1;
+            argc -= 1;
+            return result;
+        }
+
+        bool empty()
+        {
+            return argc == 0;
+        }
+    };
+
+    ////////////////////////////////////////////////////////////
+    // SPRINT
+    ////////////////////////////////////////////////////////////
+
+    struct String_Buffer
+    {
+        size_t capacity;
+        char *data;
+        size_t size;
+
+        String_View view() const
+        {
+            return {size, data};
+        }
+    };
+
+    void sprint1(String_Buffer *buffer, const char *cstr)
+    {
+        int n = snprintf(
+            buffer->data + buffer->size,
+            buffer->capacity - buffer->size,
+            "%s", cstr);
+        buffer->size = min(buffer->size + n, buffer->capacity - 1);
+    }
+
+    void sprint1(String_Buffer *buffer, String_View view)
+    {
+        int n = snprintf(
+            buffer->data + buffer->size,
+            buffer->capacity - buffer->size,
+            "%.*s", (int) view.count, view.data);
+        buffer->size = min(buffer->size + n, buffer->capacity - 1);
+    }
+
+    void sprint1(String_Buffer *buffer, char c)
+    {
+        int n = snprintf(
+            buffer->data + buffer->size,
+            buffer->capacity - buffer->size,
+            "%c", c);
+        buffer->size = min(buffer->size + n, buffer->capacity - 1);
+    }
+
+    void sprint1(String_Buffer *buffer, float f)
+    {
+        int n = snprintf(
+            buffer->data + buffer->size,
+            buffer->capacity - buffer->size,
+            "%f", f);
+        buffer->size = min(buffer->size + n, buffer->capacity - 1);
+    }
+
+    void sprint1(String_Buffer *buffer, unsigned long long x)
+    {
+        int n = snprintf(
+            buffer->data + buffer->size,
+            buffer->capacity - buffer->size,
+            "%llu", x);
+        buffer->size = min(buffer->size + n, buffer->capacity - 1);
+    }
+
+    void sprint1(String_Buffer *buffer, long unsigned int x)
+    {
+        int n = snprintf(
+            buffer->data + buffer->size,
+            buffer->capacity - buffer->size,
+            "%lu", x);
+        buffer->size = min(buffer->size + n, buffer->capacity - 1);
+    }
+
+    void sprint1(String_Buffer *buffer, int x)
+    {
+        int n = snprintf(
+            buffer->data + buffer->size,
+            buffer->capacity - buffer->size,
+            "%d", x);
+        buffer->size = min(buffer->size + n, buffer->capacity - 1);
+    }
+
+    void sprint1(String_Buffer *buffer, long int x)
+    {
+        int n = snprintf(
+            buffer->data + buffer->size,
+            buffer->capacity - buffer->size,
+            "%ld", x);
+        buffer->size = min(buffer->size + n, buffer->capacity - 1);
+    }
+
+    void sprint1(String_Buffer *buffer, bool b)
+    {
+        sprint1(buffer, b ? "true" : "false");
+    }
+
+    template <typename ... Types>
+    void sprint(String_Buffer *buffer, Types... args)
+    {
+        (sprint1(buffer, args), ...);
+    }
+
+    template <typename T>
+    void sprint1(String_Buffer *buffer, Maybe<T> maybe)
+    {
+        if (!maybe.has_value) {
+            sprint(buffer, "None");
+        } else {
+            sprint(buffer, "Some(", maybe.unwrap, ")");
+        }
+    }
+
+    template <typename ... Types>
+    void sprintln(String_Buffer *buffer, Types... args)
+    {
+        (sprint1(buffer, args), ...);
+        sprint1(buffer, '\n');
+    }
+
+    struct Pad
+    {
+        size_t n;
+        char c;
+    };
+
+    void sprint1(String_Buffer *buffer, Pad pad)
+    {
+        for (size_t i = 0; i < pad.n; ++i) {
+            sprint1(buffer, pad.c);
+        }
+    }
+
+    struct Caps
+    {
+        String_View unwrap;
+    };
+
+    void sprint1(String_Buffer *buffer, Caps caps)
+    {
+        for (size_t i = 0; i < caps.unwrap.count; ++i) {
+            sprint1(buffer, (char) toupper(caps.unwrap.data[i]));
+        }
+    }
+
+    void sprint1(String_Buffer *buffer, String_Buffer another_buffer)
+    {
+        sprint1(buffer, another_buffer.view());
     }
 
     ////////////////////////////////////////////////////////////
@@ -448,12 +724,17 @@ namespace aids
 
     void print1(FILE *stream, unsigned long long x)
     {
-        fprintf(stream, "%lld", x);
+        fprintf(stream, "%llu", x);
     }
 
     void print1(FILE *stream, long unsigned int x)
     {
         fprintf(stream, "%lu", x);
+    }
+
+    void print1(FILE *stream, unsigned int x)
+    {
+        fprintf(stream, "%u", x);
     }
 
     void print1(FILE *stream, int x)
@@ -494,17 +775,81 @@ namespace aids
         print1(stream, '\n');
     }
 
-    struct Pad
-    {
-        size_t n;
-        char c;
-    };
-
     void print1(FILE *stream, Pad pad)
     {
         for (size_t i = 0; i < pad.n; ++i) {
             fputc(pad.c, stream);
         }
+    }
+
+    void print1(FILE *stream, Caps caps)
+    {
+        for (size_t i = 0; i < caps.unwrap.count; ++i) {
+            print1(stream, (char) toupper(caps.unwrap.data[i]));
+        }
+    }
+
+    void print1(FILE *stream, String_Buffer buffer)
+    {
+        print1(stream, buffer.view());
+    }
+
+    ////////////////////////////////////////////////////////////
+    // UTF-8
+    ////////////////////////////////////////////////////////////
+
+    Maybe<uint32_t> utf8_get_code(String_View view, size_t *size)
+    {
+        const uint8_t UTF8_1BYTE_MASK      = 1 << 7;
+        const uint8_t UTF8_2BYTES_MASK     = 1 << 5;
+        const uint8_t UTF8_3BYTES_MASK     = 1 << 4;
+        const uint8_t UTF8_4BYTES_MASK     = 1 << 3;
+        const uint8_t UTF8_EXTRA_BYTE_MASK = 1 << 6;
+
+        if (view.count >= 1 &&
+            (*view.data & UTF8_1BYTE_MASK) == 0)
+        {
+            *size = 1;
+            return {true, static_cast<uint32_t>(*view.data)};
+        }
+
+        if (view.count >= 2 &&
+            (view.data[0] & UTF8_2BYTES_MASK) == 0 &&
+            (view.data[1] & UTF8_EXTRA_BYTE_MASK) == 0)
+        {
+            *size = 2;
+            const auto byte1 = static_cast<uint32_t>((view.data[0] & (UTF8_2BYTES_MASK - 1)) << 6);
+            const auto byte2 = static_cast<uint32_t>(view.data[1] & (UTF8_EXTRA_BYTE_MASK - 1));
+            return {true, byte1 | byte2};
+        }
+
+        if (view.count >= 3 &&
+            (view.data[0] & UTF8_3BYTES_MASK) == 0 &&
+            (view.data[1] & UTF8_EXTRA_BYTE_MASK) == 0 &&
+            (view.data[2] & UTF8_EXTRA_BYTE_MASK) == 0)
+        {
+            *size = 3;
+            const auto byte1 = static_cast<uint32_t>((view.data[0] & (UTF8_3BYTES_MASK - 1)) << (6 * 2));
+            const auto byte2 = static_cast<uint32_t>((view.data[1] & (UTF8_EXTRA_BYTE_MASK - 1)) << 6);
+            const auto byte3 = static_cast<uint32_t>(view.data[2] & (UTF8_EXTRA_BYTE_MASK - 1));
+            return {true, byte1 | byte2 | byte3};
+        }
+
+        if (view.count >= 4 &&
+            (view.data[0] & UTF8_4BYTES_MASK) == 0 &&
+            (view.data[1] & UTF8_EXTRA_BYTE_MASK) == 0 &&
+            (view.data[2] & UTF8_EXTRA_BYTE_MASK) == 0 &&
+            (view.data[3] & UTF8_EXTRA_BYTE_MASK) == 0)
+        {
+            *size = 4;
+            const auto byte1 = static_cast<uint32_t>((view.data[0] & (UTF8_3BYTES_MASK - 1)) << (6 * 3));
+            const auto byte2 = static_cast<uint32_t>((view.data[1] & (UTF8_EXTRA_BYTE_MASK - 1)) << (6 * 2));
+            const auto byte3 = static_cast<uint32_t>((view.data[2] & (UTF8_EXTRA_BYTE_MASK - 1)) << 6);
+            const auto byte4 = static_cast<uint32_t>(view.data[3] & (UTF8_EXTRA_BYTE_MASK - 1));
+            return {true, byte1 | byte2 | byte3 | byte4};
+        }
+
+        return {};
     }
 }
 
